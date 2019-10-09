@@ -1,0 +1,6 @@
+#!/bin/bash
+sudo apt-get install cmake libgoogle-glog-dev libatlas-base-dev libeigen3-dev libsuitesparse-dev
+
+pushd third_party/ceres-solver-1.14.0 && mkdir -p build && cd build && cmake .. && \
+    make -j`nproc` && sudo make install || \
+    { echo 'Error: ceres failed' >&2; exit 1; }
