@@ -6,8 +6,11 @@
 #include <iostream>
 
 using Eigen::Vector2f;
+using data_structs::X;
+using data_structs::V;
 using data_structs::Xdist;
 using data_structs::Vdist;
+using data_structs::Pose2D;
 using data_structs::RobotState;
 using data_structs::SolutionParameters;
 
@@ -172,7 +175,25 @@ bool GetSolution(RobotState<float> init,
       summary2.final_cost > 0;
   
   (*params) = p;
+  
+  free(xdist);
+  free(vdist);
   return p.isInitialized;
 }
+
+void GetRobotState(RobotState<float> init,
+                   RobotState<float>* at_time,
+                   SolutionParameters<float> sol,
+                   const float time_stamp) {
+  
+  float x = X(sol.a1, sol.a2, sol.a3, sol.a4, time_stamp) + time_stamp *init.vel.x;
+  float y = X(sol.a2, sol.a1, sol.a4, sol.a3, time_stamp) + time_stamp *init.vel.y;
+  float vx = V(sol.a1, sol.a2, sol.a3, sol.a4, time_stamp) + init.vel.x;
+  float vy = V(sol.a2, sol.a1, sol.a4, sol.a3, time_stamp) + init.vel.x;
+  
+  at_time->pos = Pose2D<float>(x, y);
+  at_time->vel = Pose2D<float>(vx, vy);
+}
+
 
 }  // namespace tsocs

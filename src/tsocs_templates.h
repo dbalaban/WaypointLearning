@@ -16,6 +16,8 @@ using std::cout;
 using std::endl;
 using math_util::AngleMod;
 
+namespace data_structs {
+
 static const double kEpsilon_ = 1e-6;
 static const double kEpsilonSq = kEpsilon_ * kEpsilon_;
 
@@ -150,5 +152,7 @@ T X_end(const T a, const T b, const T c, const T d, const T t) {
   sum = t * t * (a_part + b_part);
   return sum;
 }
+
+}  // nasmespace data_structs
 
 #endif  // SRC_TSOCS_TEMPLATES_H_

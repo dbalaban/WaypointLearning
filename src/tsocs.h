@@ -41,6 +41,11 @@ bool GetSolution(RobotState<float> init,
                  RobotState<float> fin,
                  SolutionParameters<float>* params);
 
+void GetRobotState(RobotState<float> init,
+                   RobotState<float>* at_time,
+                   SolutionParameters<float> sol,
+                   const float time_stamp);
+
 const float kEpsilon_ = 1e-6;
 const float kCostThreshold_ = 1e-6;
 const float accel_ = 1.0;

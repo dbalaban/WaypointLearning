@@ -10,6 +10,7 @@ using data_structs::RobotState;
 using data_structs::Pose2D;
 using data_structs::SolutionParameters;
 using tsocs::GetSolution;
+using tsocs::GetRobotState;
 
 int main(int argc, char **argv) {
     std::cout << "Hello, world!" << std::endl;
@@ -29,6 +30,18 @@ int main(int argc, char **argv) {
       std::cout << "Success!" << std::endl;
       std::cout << "Cost: " << params.cost << std::endl;
       std::cout << "Total Time: " << params.T << std::endl;
+      RobotState<float> f;
+      tsocs::GetRobotState(init, &f, params, params.T);
+      std::cout << "Final state: \n" 
+                << f.pos.x << ", " << f.pos.y << ", "
+                << f.vel.x << ", " << f.vel.y << std::endl;
+      
+      RobotState<float> h;
+      tsocs::GetRobotState(init, &h, params, params.T/2.0);
+      std::cout << "Halfway state: \n" 
+                << h.pos.x << ", " << h.pos.y << ", "
+                << h.vel.x << ", " << h.vel.y << std::endl;
+      
     } else {
       std::cout << "failed with cost: " << params.cost << std::endl;
     }
