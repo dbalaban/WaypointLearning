@@ -7,7 +7,11 @@
 #include "ceres/ceres.h"
 #include "glog/logging.h"
 
+#include "eigen3/Eigen/Dense"
+
 namespace data_structs {
+
+typedef Eigen::Matrix<float, 4, Eigen::Dynamic> StateSet;
 
 template<typename T = float>
 struct Pose2D {
@@ -59,6 +63,10 @@ struct Pose2D {
     y = pose.y;
     
     return *this;
+  }
+  
+  Eigen::Vector2f toEigen() {
+    return Eigen::Vector2f(x, y);
   }
   
   T x;

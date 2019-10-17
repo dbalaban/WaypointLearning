@@ -15,4 +15,8 @@ include_directories(${CERES_INCLUDE_DIRS})
 add_executable(waypointlearning src/main.cpp)
 TARGET_LINK_LIBRARIES(waypointlearning tsocs_library ${CERES_LIBRARIES})
 
+add_executable(solve src/solve.cc)
+TARGET_LINK_LIBRARIES(solve tsocs_library ${CERES_LIBRARIES})
+
 install(TARGETS waypointlearning RUNTIME DESTINATION bin)
+install(TARGETS solve RUNTIME DESTINATION bin)

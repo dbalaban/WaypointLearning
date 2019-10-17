@@ -22,6 +22,7 @@ namespace tsocs {
 using data_structs::RobotState;
 using data_structs::Pose2D;
 using data_structs::SolutionParameters;
+using data_structs::StateSet;
 
 float GetTimeBound(Eigen::Vector2f v0,
                    Eigen::Vector2f vf,

@@ -33,9 +33,6 @@ float GetTimeBound(Vector2f v0,
   float T1 = 2 * sqrt(x_tilda);  // travel time between rest points
   // total time for 1D problems and acceleration to rest
   
-  std::cout << "estimated times:" << std::endl;
-  std::cout << vInitMag << ", " << T1 << ", " << T_l2 << std::endl;
-  
   return T_l2 + T1 + vInitMag;
 }
 
@@ -122,9 +119,6 @@ bool GetSolution(RobotState<float> init,
   // copy params to double precision
   SolutionParameters<double> p(*params);
   p.T = t_max;
-  
-  Xdist* xdist = new Xdist(delta.pos, init.vel, x_coef_);
-  Vdist* vdist = new Vdist(delta.vel, v_coef_);
 
   // set optimization options
   ceres::Solver::Options options;
@@ -136,20 +130,20 @@ bool GetSolution(RobotState<float> init,
   // setup stage 1
   ceres::Problem stage1;
   stage1.AddResidualBlock(
-      new ceres::AutoDiffCostFunction<Xdist, 2, 1, 1, 1, 1, 1>(xdist),
+      new ceres::AutoDiffCostFunction<Xdist, 2, 1, 1, 1, 1, 1>(new Xdist(delta.pos,     init.vel, x_coef_)),
       NULL, &(p.a1), &(p.a2), &(p.a3), &(p.a4), &(p.T));
   stage1.AddResidualBlock(
-      new ceres::AutoDiffCostFunction<Vdist, 2, 1, 1, 1, 1, 1>(vdist),
+      new ceres::AutoDiffCostFunction<Vdist, 2, 1, 1, 1, 1, 1>(new Vdist(delta.vel, v_coef_)),
       NULL, &(p.a1), &(p.a2), &(p.a3), &(p.a4), &(p.T));
   stage1.SetParameterBlockConstant(&(p.T));
   
   // setup stage 2
   ceres::Problem stage2;
   stage2.AddResidualBlock(
-      new ceres::AutoDiffCostFunction<Xdist, 2, 1, 1, 1, 1, 1>(xdist),
+      new ceres::AutoDiffCostFunction<Xdist, 2, 1, 1, 1, 1, 1>(new Xdist(delta.pos,     init.vel, x_coef_)),
       NULL, &(p.a1), &(p.a2), &(p.a3), &(p.a4), &(p.T));
   stage2.AddResidualBlock(
-      new ceres::AutoDiffCostFunction<Vdist, 2, 1, 1, 1, 1, 1>(vdist),
+      new ceres::AutoDiffCostFunction<Vdist, 2, 1, 1, 1, 1, 1>(new Vdist(delta.vel, v_coef_)),
       NULL, &(p.a1), &(p.a2), &(p.a3), &(p.a4), &(p.T));
   stage2.SetParameterLowerBound(&(p.T), 0, 0);
   stage2.SetParameterUpperBound(&(p.T), 0, t_max);
@@ -158,17 +152,8 @@ bool GetSolution(RobotState<float> init,
   ceres::Solver::Summary summary1;
   ceres::Solver::Summary summary2;
   
-  std::cout << "starting set:" << std::endl;
-  std::cout << p.a1 << ", " << p.a2 << ", " 
-            << p.a3 << ", " << p.a4 << ", " << p.T << std::endl;
   Solve(options, &stage1, &summary1);
-  std::cout << "stage1 set:" << std::endl;
-  std::cout << p.a1 << ", " << p.a2 << ", " 
-            << p.a3 << ", " << p.a4 << ", " << p.T << std::endl;
   Solve(options, &stage2, &summary2);
-  std::cout << "stage2 set:" << std::endl;
-  std::cout << p.a1 << ", " << p.a2 << ", " 
-            << p.a3 << ", " << p.a4 << ", " << p.T << std::endl;
   
   p.cost = summary2.final_cost;
   p.isInitialized = summary2.final_cost <= kCostThreshold_ && 
@@ -176,8 +161,6 @@ bool GetSolution(RobotState<float> init,
   
   (*params) = p;
   
-  free(xdist);
-  free(vdist);
   return p.isInitialized;
 }
 
@@ -189,7 +172,7 @@ void GetRobotState(RobotState<float> init,
   float x = X(sol.a1, sol.a2, sol.a3, sol.a4, time_stamp) + time_stamp *init.vel.x;
   float y = X(sol.a2, sol.a1, sol.a4, sol.a3, time_stamp) + time_stamp *init.vel.y;
   float vx = V(sol.a1, sol.a2, sol.a3, sol.a4, time_stamp) + init.vel.x;
-  float vy = V(sol.a2, sol.a1, sol.a4, sol.a3, time_stamp) + init.vel.x;
+  float vy = V(sol.a2, sol.a1, sol.a4, sol.a3, time_stamp) + init.vel.y;
   
   at_time->pos = Pose2D<float>(x, y);
   at_time->vel = Pose2D<float>(vx, vy);
