@@ -83,11 +83,24 @@ int main(int argc, char **argv) {
   RobotState<float> xmid;
   RobotState<float> xmax;
   
+  GetRobotState(init, &xmin, params, min_col_time);
+  GetRobotState(init, &xmid, params, collision_point_time);
+  GetRobotState(init, &xmax, params, max_col_time);
+  
   ofs.open(output_file);
   ofs << params.T << ", " << params.a1 << ", " 
       << params.a2 << ", " << params.a3 << ", " 
       << params.a4 << ", " << time_in_collision << std::endl;
+      
+  ofs << obstacle.x() << ", " << obstacle.y() << std::endl;
   
+  ofs << min_col_time << ", " << xmin.pos.x << ", " << xmin.pos.y << ", "
+        << xmin.vel.x << ", " << xmin.vel.y << std::endl;
+  ofs << collision_point_time << ", " << xmid.pos.x << ", " << xmid.pos.y << ", "
+        << xmid.vel.x << ", " << xmid.vel.y << std::endl;
+  ofs << max_col_time << ", " << xmax.pos.x << ", " << xmax.pos.y << ", "
+        << xmax.vel.x << ", " << xmax.vel.y << std::endl;
+      
   for (unsigned int i = 0; i < 100; i++) {
     const float t = i*params.T / (100 - 1);
     RobotState<float> xt;

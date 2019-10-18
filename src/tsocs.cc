@@ -174,7 +174,7 @@ void GetRobotState(RobotState<float> init,
   float vx = V(sol.a1, sol.a2, sol.a3, sol.a4, time_stamp) + init.vel.x;
   float vy = V(sol.a2, sol.a1, sol.a4, sol.a3, time_stamp) + init.vel.y;
   
-  at_time->pos = Pose2D<float>(x, y);
+  at_time->pos = Pose2D<float>(x, y) + init.pos;
   at_time->vel = Pose2D<float>(vx, vy);
 }
 
