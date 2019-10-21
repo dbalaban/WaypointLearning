@@ -73,7 +73,7 @@ with open('initpath') as csvfile:
                 datamat=np.vstack((datamat,[vecin[1],vecin[2]]))
             
             
-plt.plot(datamat[:,0],datamat[:,1])
+plt.plot(datamat[:,0],datamat[:,1],label='Initial path')
 
 plt.plot(vecin2[0],vecin2[1],'*')
 
@@ -108,7 +108,7 @@ with open('waypath') as csvfile:
                 
                 wayamat1=np.vstack((wayamat1,[vecw1[1],vecw1[2]]))
                 
-plt.plot(wayamat1[:,0],wayamat1[:,1])
+plt.plot(wayamat1[:,0],wayamat1[:,1],label='Path through waypt 1')
 plt.plot(ptx,pty,'o')
 
 
@@ -141,7 +141,7 @@ with open('waypath1') as csvfile:
                 
                 wayamat2=np.vstack((wayamat2,[vecw2[1],vecw2[2]]))
                 
-plt.plot(wayamat2[:,0],wayamat2[:,1])
+plt.plot(wayamat2[:,0],wayamat2[:,1],label='Path through waypt 2')
 plt.plot(ptx2,pty2,'o')
 
 
@@ -170,8 +170,9 @@ with open('waypath2') as csvfile:
                 
                 wayamat3=np.vstack((wayamat3,[vecw3[1],vecw3[2]]))
                 
-plt.plot(wayamat3[:,0],wayamat3[:,1])
+plt.plot(wayamat3[:,0],wayamat3[:,1],label='Improved path through waypt 1')
+plt.legend()
 plt.plot(ptx,pty,'o')
-
+plt.savefig('trajs.png')
 
 print(vecin1[0],vec1w1[0],vec1w2[0],vec3w3[0])
