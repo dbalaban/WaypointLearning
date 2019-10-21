@@ -19,7 +19,7 @@ p2: the translation x coordinate
 p3: the translation y coordinate
 p4: the initial x velocity
 p5: the final x velocity
-p6: the final y velocity
+p6: the final y velocit
 p7: the path-time an obstacle should be placed as a proportion of total time
 p8: the offset distance the obstacle is placed at
 
@@ -40,7 +40,7 @@ the last element of the first line contains the time spent in collision,
 the second line contains the x-y position of the obstacle
 all other entries contain values that I suspect will be useful features to train on,
 they are mostly time stamps and state features at those times.
-
+6
 
 to get data with a set waypoint runt he following executable with 12 parameters:
 

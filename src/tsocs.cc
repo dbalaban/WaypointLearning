@@ -33,7 +33,7 @@ float GetTimeBound(Vector2f v0,
   float T1 = 2 * sqrt(x_tilda);  // travel time between rest points
   // total time for 1D problems and acceleration to rest
   
-  return T_l2 + T1 + vInitMag;
+ return T_l2 + T1 + vInitMag;
 }
 
 float GetFeasibleTime(float tp, float tm, int ai, float dX, float dV, float vi) {
@@ -146,7 +146,7 @@ bool GetSolution(RobotState<float> init,
       new ceres::AutoDiffCostFunction<Vdist, 2, 1, 1, 1, 1, 1>(new Vdist(delta.vel, v_coef_)),
       NULL, &(p.a1), &(p.a2), &(p.a3), &(p.a4), &(p.T));
   stage2.SetParameterLowerBound(&(p.T), 0, 0);
-  stage2.SetParameterUpperBound(&(p.T), 0, t_max);
+//  stage2.SetParameterUpperBound(&(p.T), 0, t_max);
   
   // solve!
   ceres::Solver::Summary summary1;
