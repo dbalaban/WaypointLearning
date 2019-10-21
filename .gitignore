@@ -1,12 +1,12 @@
 build/
+!build/.gitkeep
 bin/
+!bin/.gitkeep
 third_party/
+!third_party/ceres-solver-1.14.0.tar.gz
 
 *.kdev4
 *.swp
 *.out
 *.csv
 
-!build/.gitkeep
-!build/.gitkeep
-!third_party/ceres-solver-1.14.0.tar.gz
