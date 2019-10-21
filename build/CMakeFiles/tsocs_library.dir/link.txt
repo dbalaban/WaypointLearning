@@ -1,2 +1,0 @@
-/usr/bin/ar qc ../lib/libtsocs_library.a  CMakeFiles/tsocs_library.dir/src/tsocs.cc.o
-/usr/bin/ranlib ../lib/libtsocs_library.a
