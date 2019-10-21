@@ -4,7 +4,6 @@ third_party/
 
 *.kdev4
 *.swp
-*.txt
 *.out
 *.csv
 
