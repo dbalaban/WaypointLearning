@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
     const float t = i*params2.T / 100;
     RobotState<float> xt;
     GetRobotState(waypt, &xt, params2, t);
-    ofs << t << ", " << xt.pos.x << ", " << xt.pos.y << ", "
+    ofs << t + params1.T << ", " << xt.pos.x << ", " << xt.pos.y << ", "
         << xt.vel.x << ", " << xt.vel.y << std::endl;
   }
   ofs.close();

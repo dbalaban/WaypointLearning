@@ -5,6 +5,9 @@
 #include <vector>
 
 #include "eigen3/Eigen/Dense"
+#include <ceres/ceres.h>
+#include <ceres/types.h>
+#include "ceres/jet.h"
 
 #include "math_util.h"
 
@@ -14,12 +17,18 @@
 using std::isnan;
 using std::cout;
 using std::endl;
+using ceres::Jet;
 using math_util::AngleMod;
 
 namespace data_structs {
 
 static const double kEpsilon_ = 1e-6;
 static const double kEpsilonSq = kEpsilon_ * kEpsilon_;
+
+template <typename T> inline
+const T& fmax(T& x, T& y) {
+  return x < y ? y : x;
+}
 
 template <typename T>
 inline T F1(const T a, const T b) {
@@ -38,8 +47,10 @@ T F3(const T a, const T b, const T c, const T d) {
 
 template <typename T>
 T G1(const T f1, const T f2, const T f4, const T t) {
-  T g1 = sqrt(t * t * f1 * f1 + T(2) * t * f2 + f4 * f4);
-  return g1;
+  const T zero = T(0.0);
+  const T g1_sq_tmp = t * t * f1 * f1 + T(2) * t * f2 + f4 * f4;
+  const T g1_sq = fmax(g1_sq_tmp, zero);
+  return sqrt(g1_sq);
 }
 
 template <typename T>
@@ -53,9 +64,12 @@ T LogRatio(const T g1, const T f1, const T f2, const T f4) {
 template <typename T>
 T TimeDependentLogRatio(const T g1, const T f1, const T f2, const T f4,
                         const T t) {
-  T f5 = f1 * f4 + f2;
-  T g2 = f1 * g1 + t * f1 * f1 + f2;
-  T ratio = (g2 + T(kEpsilonSq)) / (f5 + T(kEpsilonSq));
+  const T zero = T(0.0);
+  const T f5_tmp = f1 * f4 + f2;
+  const T g2_tmp = f1 * g1 + t * f1 * f1 + f2;
+  const T f5 = fmax(f5_tmp, zero);
+  const T g2 = fmax(g2_tmp, zero);
+  const T ratio = (g2 + T(kEpsilonSq)) / (f5 + T(kEpsilonSq));
   return ratio;
 }
 
@@ -89,6 +103,8 @@ T X(const T a, const T b, const T c, const T d, const T t) {
     cout << "f4 = " << f4 << endl;
   }
   if (ceres::IsNaN(g1)) {
+    cout << "f2 = " << f2 << endl;
+    cout << "g1 term = " << t * t * f1 * f1 + T(2) * t * f2 + f4 * f4 << endl;
     cout << "g1 = " << g1 << endl;
   }
   if (ceres::IsNaN(ln)) {
@@ -109,6 +125,7 @@ T X(const T a, const T b, const T c, const T d, const T t) {
   if (ceres::IsNaN(bpart)) {
     printf("bpart = ");
     cout << bpart << endl;
+    cout << "ln = " << ln << endl;
   }
   if (ceres::IsNaN(sum)) {
     printf("sum is nan in X\n");
