@@ -53,9 +53,18 @@ import os
 # =============================================================================
 
 
+#time stamps of latest plot 1.4658 2.35274 2.46999 2.2767
+
+xtrans=1
+ytrans=1.4
+vxinit=0.4
+vxfinal=0.1
+vyfinal=0.1
+obs_pos=0.5
+obs_offset=0.09
 
 
-os.system("./bin/solve initpath 0.6 0.7 0.2 0.1 0.5 0.5 0.02")
+os.system("./bin/solve initpath "+str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" 0.1 0.1 0.5 0.09")
 
 with open('initpath') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=',')
@@ -71,108 +80,102 @@ with open('initpath') as csvfile:
                 vecin=[float(i) for i in row]
                 
                 datamat=np.vstack((datamat,[vecin[1],vecin[2]]))
-            
-            
-plt.plot(datamat[:,0],datamat[:,1],label='Initial path')
+                
 
-plt.plot(vecin2[0],vecin2[1],'*')
+circle1=plt.Circle((vecin2[0],vecin2[1]),0.18,color='r',label='Obstacle region')  
+          
+fig,ax1=plt.subplots()
+Topt=vecin1[0]
+Tcoll=vecin1[len(vecin1)-1]
+gamma=100
+C=(1/Topt)*(Topt+gamma*Tcoll)-1
+
+ax1.plot(datamat[:,0],datamat[:,1],color='#112233',label='T='+str(round(vecin1[0],2))+'s'+', C='+str(round(C,2)))
+
+ax1.plot(vecin2[0],vecin2[1],'*')
+ax1.plot(0,0,'x')
+ax1.plot(xtrans,ytrans,'x')
+ax1.add_patch(circle1)
 
 #choosing random point in translational space 
-ptx=np.random.uniform(vecin2[0]-0.15,vecin2[0]+0.15)
-while np.abs(ptx-vecin2[0])<0.1:
-    ptx=np.random.uniform(vecin2[0]-0.2,vecin2[0]+0.2)
+time =10
+cost=1000
+for pindex in range(10):
 
-pty=np.random.uniform(vecin2[1]-0.15,vecin2[1]+0.15)
-while np.abs(pty-vecin2[1])<0.1:
-    pty=np.random.uniform(vecin2[1]-0.2,vecin2[1]+0.2)
-    
-vx=np.random.uniform(0.1,0.3)
-vy=np.random.uniform(0.3,0.7)
-
-
-os.system("./bin/eval waypath 0.6 0.7 0.2 0.1 0.1 "+str(ptx)+" "+str(pty)+" "+str(vx)+" "+str(vy)+" "+str(vecin2[0])+" "+str(vecin2[1]))
-
-
-with open('waypath') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',')
-        ii=0
-        wayamat1=[0,0]
-        for row in spamreader:
-            ii=ii+1
-            if ii==1:
-                vec1w1=[float(i) for i in row]
-            elif ii==2:
-                vec2w1=[float(i) for i in row]
-            else:
-                vecw1=[float(i) for i in row]
-                
-                wayamat1=np.vstack((wayamat1,[vecw1[1],vecw1[2]]))
-                
-plt.plot(wayamat1[:,0],wayamat1[:,1],label='Path through waypt 1')
-plt.plot(ptx,pty,'o')
-
-
-#choosing random point in translational space 
-ptx2=np.random.uniform(vecin2[0]-0.15,vecin2[0]+0.15)
-while np.abs(ptx2-vecin2[0])<0.1:
-    ptx2=np.random.uniform(vecin2[0]-0.15,vecin2[0]+0.15)
-
-pty2=np.random.uniform(vecin2[1]-0.2,vecin2[1]+0.2)
-while np.abs(pty2-vecin2[1])<0.1:
-    pty2=np.random.uniform(vecin2[1]-0.2,vecin2[1]+0.2)
+    if pindex!=5:
+        os.system("./bin/eval waypath1 1 1.4 0.4 0.1 0.1 "+str(vecin2[0]-1+0.2*pindex)+" "+str(vecin2[1])+" "+str(0.48)+" "+str(1.03)+" "+str(vecin2[0])+" "+str(vecin2[1]))
+        
+        with open('waypath1') as csvfile:
+                spamreader = csv.reader(csvfile, delimiter=',')
+                ii=0
+                wayamat2=[0,0]
+                for row in spamreader:
+                    ii=ii+1
+                    if ii==1:
+                        vec1w=[float(i) for i in row]
+                    elif ii==2:
+                        vec2w=[float(i) for i in row]
+                    else:
+                        vecw2=[float(i) for i in row]
+                        
+                        wayamat2=np.vstack((wayamat2,[vecw2[1],vecw2[2]]))
+        
+        Ttot=vec1w[0]
+        Tcoll=vec1w[1]
+        gamma=100
+        Cw=(1/Topt)*(Ttot+gamma*Tcoll)-1       
+        ax1.plot(wayamat2[:,0],wayamat2[:,1],label='T='+str(round(vec1w[0],2))+'s'+', C='+str(round(Cw,2)))
+        if cost>Cw:
+            wayptx=vecin2[0]-1+0.2*pindex
+            waypty=vecin2[1]
+            time=vec1w[0]
+            cost=Cw
+        ax1.plot(vecin2[0]-1+0.2*pindex,vecin2[1],'o',color='#112233')
 
 
+ax1.legend(loc='left center',bbox_to_anchor=(-0.1,1))
+plt.axis('equal')
+plt.savefig('traj_posrange',bbox_inches='tight')
 
 
-os.system("./bin/eval waypath1 0.6 0.7 0.2 0.1 0.1 "+str(ptx2)+" "+str(pty2)+" "+str(vx)+" "+str(vy)+" "+str(vecin2[0])+" "+str(vecin2[1]))
+fig,ax2=plt.subplots()
 
-with open('waypath1') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',')
-        ii=0
-        wayamat2=[0,0]
-        for row in spamreader:
-            ii=ii+1
-            if ii==1:
-                vec1w2=[float(i) for i in row]
-            elif ii==2:
-                vec2w2=[float(i) for i in row]
-            else:
-                vecw2=[float(i) for i in row]
-                
-                wayamat2=np.vstack((wayamat2,[vecw2[1],vecw2[2]]))
-                
-plt.plot(wayamat2[:,0],wayamat2[:,1],label='Path through waypt 2')
-plt.plot(ptx2,pty2,'o')
+ax2.plot(datamat[:,0],datamat[:,1],label='T='+str(round(vecin1[0],2))+'s'+', C='+str(round(C,2)),color='#112233')
 
-
-if vec1w1[0]>vec1w2[0]:
-    ptx=ptx2
-    pty=pty2
-    
-vx2=vx+np.random.uniform(0,0.2)
-vy2=vy+np.random.uniform(0,0.2)
-
-
-os.system("./bin/eval waypath2 0.6 0.7 0.2 0.1 0.1 "+str(ptx)+" "+str(pty)+" "+str(vx2)+" "+str(vy2)+" "+str(vecin2[0])+" "+str(vecin2[1]))
-
-with open('waypath2') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',')
-        ii=0
-        wayamat3=[0,0]
-        for row in spamreader:
-            ii=ii+1
-            if ii==1:
-                vec3w3=[float(i) for i in row]
-            elif ii==2:
-                vec2w3=[float(i) for i in row]
-            else:
-                vecw3=[float(i) for i in row]
-                
-                wayamat3=np.vstack((wayamat3,[vecw3[1],vecw3[2]]))
-                
-plt.plot(wayamat3[:,0],wayamat3[:,1],label='Improved path through waypt 1')
-plt.legend()
-plt.plot(ptx,pty,'o')
-plt.savefig('trajs.png')
-
-print(vecin1[0],vec1w1[0],vec1w2[0],vec3w3[0])
+ax2.plot(vecin2[0],vecin2[1],'*')
+a=np.sqrt(0.48*0.48+1.03*1.03)
+for angle in range(-5,5):
+        os.system("./bin/eval waypath2 1 1.4 0.4 0.1 0.1 "+str(wayptx)+" "+str(waypty)+" "+str(a*np.cos(np.arctan(1.03/0.48)+0.3*np.pi*angle/5))+" "+str(a*np.sin(np.arctan(1.03/0.48)+0.3*np.pi*angle/5))+" "+str(vecin2[0])+" "+str(vecin2[1]))
+        
+        with open('waypath2') as csvfile:
+                spamreader = csv.reader(csvfile, delimiter=',')
+                ii=0
+                wayamat3=[0,0]
+                for row in spamreader:
+                    ii=ii+1
+                    if ii==1:
+                        vec3w3=[float(i) for i in row]
+                    elif ii==2:
+                        vec2w3=[float(i) for i in row]
+                    else:
+                        vecw3=[float(i) for i in row]
+                        
+                        wayamat3=np.vstack((wayamat3,[vecw3[1],vecw3[2]]))
+        
+        Ttot=vec3w3[0]
+        Tcoll=vec3w3[1]
+        gamma=100
+        
+        Cw2=(1/Topt)*(Ttot+gamma*Tcoll)-1  
+        if Ttot>=Topt:        
+            ax2.plot(wayamat3[:,0],wayamat3[:,1],label=str(round((180/np.pi)*(np.arctan(0.2)+0.3*np.pi*angle/5),2))+'\u00b0: T='+str(round(vec3w3[0],2))+'s'+', C='+str(round(Cw2,2)))
+        
+        
+        ax2.plot(wayptx,waypty,'o',color='#112233')
+circle2=plt.Circle((vecin2[0],vecin2[1]),0.18,color='r',label='Obstacle region')      
+ax2.plot(0,0,'x')
+ax2.plot(xtrans,ytrans,'x') 
+ax2.add_patch(circle2)
+ax2.legend(loc='left center',bbox_to_anchor=(-0.1,1))
+plt.axis('equal')
+plt.savefig('traj_Vrange',bbox_inches='tight')
