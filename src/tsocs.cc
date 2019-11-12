@@ -19,21 +19,18 @@ float GetTimeBound(Vector2f v0,
                    Vector2f vf,
                    Vector2f dx) {
   // time to accelerate to rest
-  const float vInitMag = v0.norm();
+  const float t1 = v0.norm();
+  const float t3 = vf.norm();
   // position after accelerating to rest, first rest point
-  const Vector2f x_rest = v0 * vInitMag / 2;
+  const Vector2f x_1 = v0 * t1 / 2;
+  // position before accelerating to goal, second rest point
+  const Vector2f x_2 = dx - vf * t3 / 2;
 
-  // time of direct acceleration to end velocity:
-  const float T_l2 = vf.norm();
-
-  // vector from second rest point to final point:
-  const Vector2f x_prime = (vf - v0) * vf.norm() / 2;
   // dist between two rest points
-  const float x_tilda = (dx - x_rest - x_prime).norm();
-  float T1 = 2 * sqrt(x_tilda);  // travel time between rest points
+  const float x_tilda = (x_2 - x_1).norm();
+  float t2 = 2 * sqrt(x_tilda);  // travel time between rest points
   // total time for 1D problems and acceleration to rest
-  
- return T_l2 + T1 + vInitMag;
+  return t1 + t2 + t3;
 }
 
 float GetFeasibleTime(float tp, float tm, int ai, float dX, float dV, float vi) {
@@ -112,6 +109,16 @@ bool GetSolution(RobotState<float> init,
   Vector2f vf(fin.vel.x, fin.vel.y);
   Vector2f dx(delta.pos.x, delta.pos.y);
   Vector2f dv(delta.vel.x, delta.vel.y);
+  Eigen::Matrix2f R = Eigen::Matrix2f::Identity();
+  if (fabs(v0.y()) > 0) {
+    const float angle = atan2(v0.y(), v0.x());
+    Eigen::Rotation2D<float> rot2(-angle);
+    R = rot2.toRotationMatrix();
+    v0 = R*v0;
+    vf = R*vf;
+    dx = R*dx;
+    dv = R*dv;
+  }
   
   GetGuess(v0, vf, dx, params);
   const double t_max = GetTimeBound(v0, vf, dx);
@@ -126,6 +133,7 @@ bool GetSolution(RobotState<float> init,
   options.linear_solver_type = ceres::DENSE_QR;
   options.minimizer_progress_to_stdout = false;
   options.logging_type = ceres::SILENT;
+  options.function_tolerance = 1e-20;
   
   // setup stage 1
   ceres::Problem stage1;
@@ -156,8 +164,25 @@ bool GetSolution(RobotState<float> init,
   Solve(options, &stage2, &summary2);
   
   p.cost = summary2.final_cost;
+  
+  while (p.cost > 1e-6) {
+    p.T = t_max * static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    Solve(options, &stage1, &summary1);
+    Solve(options, &stage2, &summary2);
+    p.cost = summary2.final_cost;
+  }
+  
   p.isInitialized = summary2.final_cost <= kCostThreshold_ && 
       summary2.final_cost > 0;
+  
+  Vector2f a12(p.a1, p.a2);
+  Vector2f a34(p.a3, p.a4);
+  a12 = R.transpose()*a12;
+  a34 = R.transpose()*a34;
+  p.a1 = a12.x();
+  p.a2 = a12.y();
+  p.a3 = a34.x();
+  p.a4 = a34.y();
   
   (*params) = p;
   
