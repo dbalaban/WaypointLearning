@@ -40,9 +40,9 @@ the last element of the first line contains the time spent in collision,
 the second line contains the x-y position of the obstacle
 all other entries contain values that I suspect will be useful features to train on,
 they are mostly time stamps and state features at those times.
-6
 
-to get data with a set waypoint runt he following executable with 12 parameters:
+
+to get data with a set waypoint run the following executable with 12 parameters:
 
 ./bin/eval p1 p2 p3 p4 p5 p6 p7 p8 p9 p10 p11 p12
 
