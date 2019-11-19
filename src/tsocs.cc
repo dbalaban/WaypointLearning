@@ -109,16 +109,6 @@ bool GetSolution(RobotState<float> init,
   Vector2f vf(fin.vel.x, fin.vel.y);
   Vector2f dx(delta.pos.x, delta.pos.y);
   Vector2f dv(delta.vel.x, delta.vel.y);
-  Eigen::Matrix2f R = Eigen::Matrix2f::Identity();
-  if (fabs(v0.y()) > 0) {
-    const float angle = atan2(v0.y(), v0.x());
-    Eigen::Rotation2D<float> rot2(-angle);
-    R = rot2.toRotationMatrix();
-    v0 = R*v0;
-    vf = R*vf;
-    dx = R*dx;
-    dv = R*dv;
-  }
   
   GetGuess(v0, vf, dx, params);
   const double t_max = GetTimeBound(v0, vf, dx);
@@ -161,7 +151,20 @@ bool GetSolution(RobotState<float> init,
   ceres::Solver::Summary summary2;
   
   Solve(options, &stage1, &summary1);
+  
+  if (kDebug_) {
+    std::cout << "Frist Stage Solution:" << std::endl
+              << p.a1 << ", " << p.a2 << ", " << p.a3 << ", "
+              << p.a4 << ", " << p.T << std::endl;
+  }
+  
   Solve(options, &stage2, &summary2);
+  
+  if (kDebug_) {
+    std::cout << "Second Stage Solution:" << std::endl
+              << p.a1 << ", " << p.a2 << ", " << p.a3 << ", "
+              << p.a4 << ", " << p.T << std::endl;
+  }
   
   p.cost = summary2.final_cost;
   
@@ -174,15 +177,6 @@ bool GetSolution(RobotState<float> init,
   
   p.isInitialized = summary2.final_cost <= kCostThreshold_ && 
       summary2.final_cost > 0;
-  
-  Vector2f a12(p.a1, p.a2);
-  Vector2f a34(p.a3, p.a4);
-  a12 = R.transpose()*a12;
-  a34 = R.transpose()*a34;
-  p.a1 = a12.x();
-  p.a2 = a12.y();
-  p.a3 = a34.x();
-  p.a4 = a34.y();
   
   (*params) = p;
   
