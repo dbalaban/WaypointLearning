@@ -155,7 +155,11 @@ bool GetSolution(RobotState<float> init,
   if (kDebug_) {
     std::cout << "Frist Stage Solution:" << std::endl
               << p.a1 << ", " << p.a2 << ", " << p.a3 << ", "
-              << p.a4 << ", " << p.T << std::endl;
+              << p.a4 << ", " << p.T << ", " << summary1.final_cost << std::endl;
+    RobotState<float> r;
+    GetRobotState(init, &r, p, p.T);
+    std::cout << "First Stage Final State:" << std::endl
+              << r.pos.x << ", " << r.pos.y << ", " << r.vel.x << ", " << r.vel.y << std::endl;
   }
   
   Solve(options, &stage2, &summary2);
@@ -163,12 +167,21 @@ bool GetSolution(RobotState<float> init,
   if (kDebug_) {
     std::cout << "Second Stage Solution:" << std::endl
               << p.a1 << ", " << p.a2 << ", " << p.a3 << ", "
-              << p.a4 << ", " << p.T << std::endl;
+              << p.a4 << ", " << p.T << ", " << summary2.final_cost << std::endl;
+    RobotState<float> r;
+    GetRobotState(init, &r, p, p.T);
+    std::cout << "Second Stage Final State:" << std::endl
+              << r.pos.x << ", " << r.pos.y << ", " << r.vel.x << ", " << r.vel.y << std::endl
+              << "Desired Final State:" << std::endl
+              << fin.pos.x << ", " << fin.pos.y << ", " << fin.vel.x << ", " << fin.vel.y << std::endl;
+    
   }
   
   p.cost = summary2.final_cost;
   
   while (p.cost > 1e-6) {
+    GetGuess(v0, vf, dx, params);
+    p = *params;
     p.T = t_max * static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     Solve(options, &stage1, &summary1);
     Solve(options, &stage2, &summary2);
