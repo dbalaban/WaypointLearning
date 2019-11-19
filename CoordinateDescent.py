@@ -99,9 +99,9 @@ def traj_cost(datastr):
 
 
 xtrans=2
-ytrans=4
+ytrans=6
 vxinit=0.5
-vxfinal=1
+vxfinal=3
 vyfinal=0.3
 obs_pos=0.5
 obs_offset=0.09
@@ -135,9 +135,9 @@ fig,ax1=plt.subplots()
 Topt=vecin1[0]
 Tcoll=vecin1[len(vecin1)-1]
 gamma=100
-C=(1/Topt)*(Topt+gamma*Tcoll)-1
 
-ax1.plot(datamat[:,0],datamat[:,1],color='#112233',label='T='+str(round(vecin1[0],2))+'s'+', C='+str(round(C,2)))
+
+#ax1.plot(datamat[:,0],datamat[:,1],color='#112233',label='T='+str(round(vecin1[0],2))+'s'+', C='+str(round(C,2)))
 
 ax1.plot(vecin2[0],vecin2[1],'*')
 ax1.plot(0,0,'x')
@@ -158,294 +158,95 @@ delta=0.001
 
 D=100
 gamma=100
-step=0.18-obs_offset
+step=0.18
 
-Wayptvec=[wayptx,waypty,vxsel,vysel]
-
+waypt_coord=[wayptx,waypty,vxsel,vysel]
+WPT=[wayptx,waypty,vxsel,vysel]
 epsilon=0.001
 D=100
+coeff_sel=[-1,0,1]
 
 while D>epsilon:
-    Cmx=100
-    Cmy=100
-    Cmvx=100
-    Cmvy=100
-    step=0.18-obs_offset
-    while step>0.001:
-        
-        wayptx_1=wayptx-step
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx_1)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        if traj_cost(datastr)==-1:
-            C1=100
-            #wayptx_1=wayptx_1*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-             #     +str(vyfinal)+" "+str(wayptx_1)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        else:
-            C1,wayamat1=traj_cost(datastr)
-        
-        
-        wayptx_2=wayptx+step
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx_2)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        if traj_cost(datastr)==-1:
-            C1=100
-            #wayptx_2=wayptx_2*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-            #      +str(vyfinal)+" "+str(wayptx_2)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        else:
-            C2,wayamat2=traj_cost(datastr)
-        
-        
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        if traj_cost(datastr)==-1:
-            C=100
-            #wayptx=wayptx*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-            #      +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        else:
-            C,wayamat=traj_cost(datastr)
-        
-        if C1<C and C1<=C2:
-            wayptx=wayptx-step
-            wayamatX=wayamat1
-        elif C2<C and C2<=C1:
-            wayptx=wayptx+step
-            wayamatX=wayamat2
-        elif C==C1 and C==C2 and C==100:
-            step=1.2*step
-        else:
-            step=step/2
-        
-        if C<Cmx:
-            Cmx=C
-    
-    
-    ax1.plot(wayamatX[:,0],wayamatX[:,1])
-    ax1.plot(wayptx,waypty,'o')
-           
-    
-    
-    
-    step=0.18-obs_offset
-    
-    while step>0.001:
-        
-        waypty_1=waypty-step
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty_1)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-                  
-        if traj_cost(datastr)==-1:
-            C1=100
-            #waypty_1=waypty_1*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-            #      +str(vyfinal)+" "+str(wayptx)+" "+str(waypty_1)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        else:          
-            C1,wayamat1=traj_cost(datastr)
-   
-        waypty_2=waypty+step
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty_2)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        if traj_cost(datastr)==-1:
-            C2=100
-            #waypty_2=waypty_2*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-             #     +str(vyfinal)+" "+str(wayptx)+" "+str(waypty_2)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        else:
-            C2,wayamat2=traj_cost(datastr)  
-     
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-                  
-        if traj_cost(datastr)==-1:
-            C=100
-            #waypty=waypty*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-           #       +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-      
-        else:
-            C,wayamat=traj_cost(datastr)  
-        
-        if C1<C and C1<=C2:
-            waypty=waypty-step
-            wayamatX=wayamat1
-        elif C2<C and C2<=C1:
-            waypty=waypty+step
-            wayamatX=wayamat2
-        elif C==C1 and C==C2 and C==100:
-            step=1.2*step
-        else:
-            step=step/2
+    C=np.zeros(3)
+    step=0.1
+    for iindex in range(0,4):
+        step=0.1
+        while step>0.001:
             
-        if C<Cmy:
-            Cmy=C
-    
-    
-    ax1.plot(wayamatX[:,0],wayamatX[:,1])
-    ax1.plot(wayptx,waypty,'o')
+            for coeff in (-1,0,1):
             
-        
-        
-    
-    
-    vstep=0.2
-    
-    while vstep>0.005:
-        
-        vselx1=vxsel-vstep
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vselx1)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        if traj_cost(datastr)==-1:
-            C1=100
-            #vselx1=vselx1*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-            #      +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vselx1)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-      
-        
-        else:
-        
-            C1,wayamat1=traj_cost(datastr)
-        
-        vselx2=vxsel+vstep
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vselx2)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        
-        if traj_cost(datastr)==-1:
-            C2=100
-            #vselx2=vselx2*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-            #      +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vselx2)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-      
-        else:
-        
-            C2,wayamat2=traj_cost(datastr)
-        
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        if traj_cost(datastr)==-1:
-            C=100
-            #vxsel=vxsel*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-            #      +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-      
-        else:
-            C,wayamat=traj_cost(datastr)
-        
-        if C1<C and C1<=C2:
-            vxsel=vselx1
-            wayamatX=wayamat1
-        elif C2<C and C2<=C1:
-            vxsel=vselx2
-            wayamatX=wayamat2
-        elif C==C1 and C==C2 and C==100:
-            vstep=1.2*vstep
-        else:
-            vstep=vstep/2
-    
-        
-        if C<Cmvx:
-            Cmvx=C
-    
-    ax1.plot(wayamatX[:,0],wayamatX[:,1])
-    ax1.plot(wayptx,waypty,'o')
-            
-    
-    
-    
-    vstep=0.2
-    
-    while vstep>0.005:
-        
-        vsely1=vysel-vstep
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vsely1)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        if traj_cost(datastr)==-1:
-            C1=100
-            #vsely1=vsely1*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-            #      +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vsely1)+" "+str(vecin2[0])+" "+str(vecin2[1])
-      
-        else:
-            C1,wayamat1=traj_cost(datastr)
-        
-        #ax1.plot(wayamat2[:,0],wayamat2[:,1])
-        #ax1.plot(wayptx_1,waypty)
-        
-        vsely2=vysel+vstep
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vsely2)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        
-        if traj_cost(datastr)==-1:
-            C2=100
-            #vsely2=vsely2*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-             #     +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vsely2)+" "+str(vecin2[0])+" "+str(vecin2[1])
-      
-        else:
-            C2,wayamat2=traj_cost(datastr)
-        
-        #ax1.plot(wayamat2[:,0],wayamat2[:,1])
-        #ax1.plot(wayptx_2,waypty)
-        
-        datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                  +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-        
-        if traj_cost(datastr)==-1:
-            C=100
-            #vysel=vysel*(1+0.001*random.uniform(-1,1))
-            #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-             #     +str(vyfinal)+" "+str(wayptx)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-      
-        
-        else:
-            C,wayamat=traj_cost(datastr)
+                waypt_coord1=waypt_coord[iindex]+coeff*step
                 
+                wayptcoord_temp=waypt_coord[0:iindex]+[waypt_coord1]+waypt_coord[iindex+1:4]
+                waypt_str=" "
+                for jj in range(0,len(wayptcoord_temp)):
+                    waypt_str=waypt_str+str(wayptcoord_temp[jj])+" "
+                
+                datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
+                          +str(vyfinal)+waypt_str+str(vecin2[0])+" "+str(vecin2[1])
+                
+                if traj_cost(datastr)==-1:
+                    C[coeff+1]=float(100)
+                    #wayptx_1=wayptx_1*(1+0.001*random.uniform(-1,1))
+                    #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
+                     #     +str(vyfinal)+" "+str(wayptx_1)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
+                else:
+                    Cx,wayamat1=traj_cost(datastr)
+                    C[coeff+1]=Cx
         
-        
-        if C1<C and C1<=C2:
-            vysel=vsely1
-            wayamatX=wayamat1
-        elif C2<C and C2<=C1:
-            vysel=vsely2
-            wayamatX=wayamat2
-        elif C==C1 and C==C2 and C==100:
-            vstep=1.2*vstep
-        else:
-            vstep=vstep/2
-        
-        if C<Cmvy:
-            Cmvy=C
-        
-    Wayptvec1=[wayptx,waypty,vxsel,vysel]
-    Wayptvec2=[-wayptx,-waypty,-vxsel,-vysel]
-    D=np.linalg.norm(np.add(Wayptvec,Wayptvec2))
+            
+            
+            if C[0]==C[1] and C[0]==C[2] and C[0]==100:
+                step=1.2*step
+            else:
+                sel=np.argmin(C)
+                waypt_coord[iindex]=waypt_coord[iindex]+coeff_sel[sel]*step
+                if coeff_sel[sel]==0:
+                    step=step/2
+                
+                
+                
+    
+            print(waypt_coord,iindex)
+    
+    Wayptvec1=waypt_coord
+    Wayptvec2=np.array(waypt_coord)*-1
+    print(Wayptvec2)
+    WPT=np.array(WPT)
+    print(WPT)
+    D=np.linalg.norm(np.add(WPT,Wayptvec2))
     print(D)
-    print(Cmx,Cmy,Cmvx,Cmvy)
-    Wayptvec=[wayptx,waypty,vxsel,vysel]
+    
+    WPT=waypt_coord     
+    
+    
+    
+    
+    
+    
+   
 
 fig,ax2=plt.subplots()
 ax2.add_patch(circle2)
-ax2.plot(wayamatX[:,0],wayamatX[:,1])
-ax2.plot(wayptx,waypty,'o')
+
+waypt_str=" "
+for jj in range(0,len(wayptcoord_temp)):
+    waypt_str=waypt_str+str(waypt_coord[jj])+" "
+
+datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
+          +str(vyfinal)+waypt_str+str(vecin2[0])+" "+str(vecin2[1])
+
+if traj_cost(datastr)==-1:
+    C[coeff]=float(100)
+    #wayptx_1=wayptx_1*(1+0.001*random.uniform(-1,1))
+    #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
+     #     +str(vyfinal)+" "+str(wayptx_1)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
+else:
+    Cx,wayamat=traj_cost(datastr)
+
+
+ax2.plot(wayamat[:,0],wayamat[:,1])
+ax2.plot(waypt_coord[0],waypt_coord[1],'o')
 
 #ax1.plot(wayptx,waypty,'o')
 #        
