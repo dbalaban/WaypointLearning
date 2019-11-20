@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Nov 19 10:10:01 2019
+
+@author: amodh
+"""
+
+
+
+
+
+def coord_desc(xtrans=2,
+    ytrans,
+    vxinit,
+    vxfinal,
+    vyfinal,
+    obs_pos,
+    obs_offset
+    ):
+    
+
+coord_desc(xtrans=2,
+    ytrans=6,
+    vxinit=0.5,
+    vxfinal=3,
+    vyfinal=0.3,
+    obs_pos=0.5,
+    obs_offset=0.09
+    )

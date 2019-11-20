@@ -63,200 +63,231 @@ import random
 #time stamps of latest plot 1.4658 2.35274 2.46999 2.2767
 
 
-
-errfile=open('error.txt','a')
-def traj_cost(datastr):
-    os.system("./bin/eval waypath1 "+datastr)
-    with open('waypath1') as csvfile:
-                spamreader = csv.reader(csvfile, delimiter=',')
-                ii=0
-                wayamat2=[0,0]
-                for row in spamreader:
-                    if row==['tsocs could not find the solution']:
-                        errfile=open('error.txt','a')
-                        errfile.write(datastr+'\n')
-                        errfile.close()
-                        token=-1
-                        return token
-                    ii=ii+1
-                    if ii==1:
-                        vec1w=[float(i) for i in row]
-                    elif ii==2:
-                        vec2w=[float(i) for i in row]
-                    else:
-                        vecw2=[float(i) for i in row]
-                        
-                        wayamat2=np.vstack((wayamat2,[vecw2[1],vecw2[2]]))
+def coord_desc(xtrans,ytrans,vxinit,vxfinal,vyfinal,obs_pos,obs_offset):
     
-    Ttot=vec1w[0]
-    Tcoll=vec1w[1]
+    errfile=open('error.txt','a')
     
-    C1=(1/Topt)*(Ttot+gamma*Tcoll)-1   
-    #ax1.plot(wayamat2[:,0],wayamat2[:,1])
-    return C1,wayamat2
+    def traj_cost(datastr):
         
-
-
-
-xtrans=2
-ytrans=6
-vxinit=0.5
-vxfinal=3
-vyfinal=0.3
-obs_pos=0.5
-obs_offset=0.09
-
-
-os.system("./bin/solve initpath "+str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "+str(vyfinal)+" "+str(obs_pos)+" "+str(obs_offset))
-datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "+str(vyfinal)+" "+str(obs_pos)+" "+str(obs_offset)
-with open('initpath') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=',')
-        ii=0
-        datamat=[0,0]
-        for row in spamreader:
-            if row==['tsocs could not find the solution']:
-                errfile.write(datastr+'\n')
-                errfile.close()
-            ii=ii+1
-            if ii==1:
-                vecin1=[float(i) for i in row]
-            elif ii==2:
-                vecin2=[float(i) for i in row]
-            elif ii>=6:
-                vecin=[float(i) for i in row]
-                
-                datamat=np.vstack((datamat,[vecin[1],vecin[2]]))
-                
-
-circle1=plt.Circle((vecin2[0],vecin2[1]),0.18,color='r',label='Obstacle region')  
-circle2=plt.Circle((vecin2[0],vecin2[1]),0.18,color='r',label='Obstacle region')  
-          
-fig,ax1=plt.subplots()
-Topt=vecin1[0]
-Tcoll=vecin1[len(vecin1)-1]
-gamma=100
-
-
-#ax1.plot(datamat[:,0],datamat[:,1],color='#112233',label='T='+str(round(vecin1[0],2))+'s'+', C='+str(round(C,2)))
-
-ax1.plot(vecin2[0],vecin2[1],'*')
-ax1.plot(0,0,'x')
-ax1.plot(xtrans,ytrans,'x')
-ax1.add_patch(circle1)
-
-obs_dist=[vecin2[0],vecin2[1]]-datamat
-dist_sq=np.square(obs_dist)
-min_ind=np.argmin(np.sum(dist_sq,axis=1))
-
-ax1.plot(datamat[min_ind,0],datamat[min_ind,1],'o')
-
-wayptx=datamat[min_ind,0]
-waypty=datamat[min_ind,1]
-vxsel=vxfinal*(1-obs_pos)+vxinit*obs_pos
-vysel=vyfinal*(1-obs_pos)
-delta=0.001
-
-D=100
-gamma=100
-step=0.18
-
-waypt_coord=[wayptx,waypty,vxsel,vysel]
-WPT=[wayptx,waypty,vxsel,vysel]
-epsilon=0.001
-D=100
-coeff_sel=[-1,0,1]
-
-while D>epsilon:
-    C=np.zeros(3)
-    step=0.1
-    for iindex in range(0,4):
-        step=0.1
-        while step>0.001:
+        os.system("./bin/eval waypath1 "+datastr)
+        with open('waypath1') as csvfile:
+                    spamreader = csv.reader(csvfile, delimiter=',')
+                    ii=0
+                    wayamat2=[0,0]
+                    for row in spamreader:
+                        if row==['tsocs could not find the solution']:
+                            errfile=open('error.txt','a')
+                            errfile.write(datastr+'\n')
+                            errfile.close()
+                            token=-1
+                            return token
+                        ii=ii+1
+                        if ii==1:
+                            vec1w=[float(i) for i in row]
+                        elif ii==2:
+                            vec2w=[float(i) for i in row]
+                        else:
+                            vecw2=[float(i) for i in row]
+                            
+                            wayamat2=np.vstack((wayamat2,[vecw2[1],vecw2[2]]))
+        
+        Ttot=vec1w[0]
+        Tcoll=vec1w[1]
+        
+        C1=(1/Topt)*(Ttot+gamma*Tcoll)-1   
+        #ax1.plot(wayamat2[:,0],wayamat2[:,1])
+        return C1,wayamat2
             
-            for coeff in (-1,0,1):
-            
-                waypt_coord1=waypt_coord[iindex]+coeff*step
+    
+    
+    
+    
+    
+    os.system("./bin/solve initpath "+str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "+str(vyfinal)+" "+str(obs_pos)+" "+str(obs_offset))
+    
+    print(str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "+str(vyfinal)+" "+str(obs_pos)+" "+str(obs_offset))
+    datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "+str(vyfinal)+" "+str(obs_pos)+" "+str(obs_offset)
+    with open('initpath') as csvfile:
+            spamreader = csv.reader(csvfile, delimiter=',')
+            ii=0
+            datamat=[0,0]
+            for row in spamreader:
+                if row==['tsocs could not find the solution']:
+                    errfile.write(datastr+'\n')
+                    errfile.close()
+                ii=ii+1
+                if ii==1:
+                    vecin1=[float(i) for i in row]
+                elif ii==2:
+                    vecin2=[float(i) for i in row]
+                elif ii>=6:
+                    vecin=[float(i) for i in row]
+                    
+                    datamat=np.vstack((datamat,[vecin[1],vecin[2]]))
+                    
+    
+    circle1=plt.Circle((vecin2[0],vecin2[1]),0.18,color='r',label='Obstacle region')  
+    circle2=plt.Circle((vecin2[0],vecin2[1]),0.18,color='r',label='Obstacle region')  
+              
+    fig,ax1=plt.subplots()
+   
+    
+    #ax1.plot(datamat[:,0],datamat[:,1],color='#112233',label='T='+str(round(vecin1[0],2))+'s'+', C='+str(round(C,2)))
+    
+    ax1.plot(vecin2[0],vecin2[1],'*')
+    ax1.plot(0,0,'x')
+    ax1.plot(xtrans,ytrans,'x')
+    ax1.add_patch(circle1)
+    ax1.plot(datamat[:,0],datamat[:,1])
+    obs_dist=[vecin2[0],vecin2[1]]-datamat
+    dist_sq=np.square(obs_dist)
+    min_ind=np.argmin(np.sum(dist_sq,axis=1))
+    
+    ax1.plot(datamat[min_ind,0],datamat[min_ind,1],'o')
+    
+    wayptx=datamat[min_ind,0]
+    waypty=datamat[min_ind,1]
+    vxsel=vxfinal*(1-obs_pos)+vxinit*obs_pos
+    vysel=vyfinal*(1-obs_pos)
+    
+    D=100
+    gamma=100
+    step=0.18
+    
+    
+    WPT=[wayptx,waypty,vxsel,vysel]
+    wayptC=WPT
+    epsilon=0.001
+    D=100
+    
+    C=0
+    while D>epsilon:
+       
+      
+        for iindex in range(0,4):
+            step=0.5
+            while step>0.001:
                 
-                wayptcoord_temp=waypt_coord[0:iindex]+[waypt_coord1]+waypt_coord[iindex+1:4]
-                waypt_str=" "
-                for jj in range(0,len(wayptcoord_temp)):
-                    waypt_str=waypt_str+str(wayptcoord_temp[jj])+" "
+                
+                
+                WPT1=wayptC[iindex]-step
+                
+                WPT_temp1=wayptC[0:iindex]+[WPT1]+wayptC[iindex+1:4]
+                WPT_str=" "
+                for jj in range(0,4):
+                    WPT_str=WPT_str+str(WPT_temp1[jj])+" "
                 
                 datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-                          +str(vyfinal)+waypt_str+str(vecin2[0])+" "+str(vecin2[1])
+                          +str(vyfinal)+WPT_str+str(vecin2[0])+" "+str(vecin2[1])
                 
                 if traj_cost(datastr)==-1:
-                    C[coeff+1]=float(100)
+                    #counter=counter+1
+                    C1=float(100)
                     #wayptx_1=wayptx_1*(1+0.001*random.uniform(-1,1))
                     #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
                      #     +str(vyfinal)+" "+str(wayptx_1)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
                 else:
-                    Cx,wayamat1=traj_cost(datastr)
-                    C[coeff+1]=Cx
-        
+                    C1,wayamat1=traj_cost(datastr)
+                    #counter=counter+1
+                    
             
-            
-            if C[0]==C[1] and C[0]==C[2] and C[0]==100:
-                step=1.2*step
-            else:
-                sel=np.argmin(C)
-                waypt_coord[iindex]=waypt_coord[iindex]+coeff_sel[sel]*step
-                if coeff_sel[sel]==0:
+                
+                WPT1=wayptC[iindex]+step
+                
+                WPT_temp2=wayptC[0:iindex]+[WPT1]+wayptC[iindex+1:4]
+                WPT_str=" "
+                for jj in range(0,4):
+                    WPT_str=WPT_str+str(WPT_temp2[jj])+" "
+                
+                datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
+                          +str(vyfinal)+WPT_str+str(vecin2[0])+" "+str(vecin2[1])
+                
+                if traj_cost(datastr)==-1:
+                    #counter=counter+1
+                    C2=float(100)
+                    #wayptx_1=wayptx_1*(1+0.001*random.uniform(-1,1))
+                    #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
+                     #     +str(vyfinal)+" "+str(wayptx_1)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
+                else:
+                    C2,wayamat2=traj_cost(datastr)
+                    #counter=counter+1
+                    
+                WPT1=wayptC[iindex]
+                
+                WPT_temp=wayptC[0:iindex]+[WPT1]+wayptC[iindex+1:4]
+                WPT_str=" "
+                for jj in range(0,4):
+                    WPT_str=WPT_str+str(WPT_temp[jj])+" "
+                
+                datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
+                          +str(vyfinal)+WPT_str+str(vecin2[0])+" "+str(vecin2[1])
+                
+                if traj_cost(datastr)==-1:
+                    #counter=counter+1
+                    C=float(100)
+                    #wayptx_1=wayptx_1*(1+0.001*random.uniform(-1,1))
+                    #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
+                     #     +str(vyfinal)+" "+str(wayptx_1)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
+                else:
+                    C,wayamat=traj_cost(datastr)
+                    #counter=counter+1
+                
+                
+                print(C,C1,C2)
+                
+                if C1<=C2 and C1<C:
+                    wayptC=WPT_temp1
+                    wayamat=wayamat1
+                elif C2<=C1 and C2<C:
+                    wayptC=WPT_temp2
+                    wayamat=wayamat2
+                else:
                     step=step/2
+                    
                 
-                
-                
+                    
+                    
+                    
+        
+                print(wayptC,iindex)
+                ax1.plot(wayamat[:,0],wayamat[:,1])
+                ax1.plot(wayptC[0],wayptC[1],'o')
     
-            print(waypt_coord,iindex)
+        
+        Wayptvec2=np.array(wayptC)*-1
+        print(Wayptvec2)
+        WPT=np.array(WPT)
+        print(WPT)
+        D=np.linalg.norm(np.add(WPT,Wayptvec2))
+        print(D)
+        
+        WPT=wayptC     
+        
+        
+        
+        
+        
+        
+       
     
-    Wayptvec1=waypt_coord
-    Wayptvec2=np.array(waypt_coord)*-1
-    print(Wayptvec2)
-    WPT=np.array(WPT)
-    print(WPT)
-    D=np.linalg.norm(np.add(WPT,Wayptvec2))
-    print(D)
-    
-    WPT=waypt_coord     
+    fig,ax2=plt.subplots()
+    ax2.add_patch(circle2)
     
     
     
+    ax2.plot(wayamat[:,0],wayamat[:,1])
+    ax2.plot(wayptC[0],wayptC[1],'o')
+    
+    #ax1.plot(wayptx,waypty,'o')
+    #        
+    plt.axis('equal')
+    plt.show()
+    
+    return
     
     
     
-   
-
-fig,ax2=plt.subplots()
-ax2.add_patch(circle2)
-
-waypt_str=" "
-for jj in range(0,len(wayptcoord_temp)):
-    waypt_str=waypt_str+str(waypt_coord[jj])+" "
-
-datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-          +str(vyfinal)+waypt_str+str(vecin2[0])+" "+str(vecin2[1])
-
-if traj_cost(datastr)==-1:
-    C[coeff]=float(100)
-    #wayptx_1=wayptx_1*(1+0.001*random.uniform(-1,1))
-    #datastr=str(xtrans)+" "+str(ytrans)+" "+str(vxinit)+" "+str(vxfinal)+" "\
-     #     +str(vyfinal)+" "+str(wayptx_1)+" "+str(waypty)+" "+str(vxsel)+" "+str(vysel)+" "+str(vecin2[0])+" "+str(vecin2[1])
-else:
-    Cx,wayamat=traj_cost(datastr)
-
-
-ax2.plot(wayamat[:,0],wayamat[:,1])
-ax2.plot(waypt_coord[0],waypt_coord[1],'o')
-
-#ax1.plot(wayptx,waypty,'o')
-#        
-#plt.axis('equal')
-
-
-
-
-
-
-
-
-
+    
+    
+    
+    
