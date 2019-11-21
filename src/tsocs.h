@@ -54,6 +54,7 @@ const float x_coef_ = 1.0;
 const float v_coef_ = 1.0;
 
 const unsigned int kMaxIterations_ = 1000;
+const bool kDebug_ = false;
   
 }  // namespace tsocs
 

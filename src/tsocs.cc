@@ -109,16 +109,6 @@ bool GetSolution(RobotState<float> init,
   Vector2f vf(fin.vel.x, fin.vel.y);
   Vector2f dx(delta.pos.x, delta.pos.y);
   Vector2f dv(delta.vel.x, delta.vel.y);
-  Eigen::Matrix2f R = Eigen::Matrix2f::Identity();
-  if (fabs(v0.y()) > 0) {
-    const float angle = atan2(v0.y(), v0.x());
-    Eigen::Rotation2D<float> rot2(-angle);
-    R = rot2.toRotationMatrix();
-    v0 = R*v0;
-    vf = R*vf;
-    dx = R*dx;
-    dv = R*dv;
-  }
   
   GetGuess(v0, vf, dx, params);
   const double t_max = GetTimeBound(v0, vf, dx);
@@ -161,11 +151,37 @@ bool GetSolution(RobotState<float> init,
   ceres::Solver::Summary summary2;
   
   Solve(options, &stage1, &summary1);
+  
+  if (kDebug_) {
+    std::cout << "Frist Stage Solution:" << std::endl
+              << p.a1 << ", " << p.a2 << ", " << p.a3 << ", "
+              << p.a4 << ", " << p.T << ", " << summary1.final_cost << std::endl;
+    RobotState<float> r;
+    GetRobotState(init, &r, p, p.T);
+    std::cout << "First Stage Final State:" << std::endl
+              << r.pos.x << ", " << r.pos.y << ", " << r.vel.x << ", " << r.vel.y << std::endl;
+  }
+  
   Solve(options, &stage2, &summary2);
+  
+  if (kDebug_) {
+    std::cout << "Second Stage Solution:" << std::endl
+              << p.a1 << ", " << p.a2 << ", " << p.a3 << ", "
+              << p.a4 << ", " << p.T << ", " << summary2.final_cost << std::endl;
+    RobotState<float> r;
+    GetRobotState(init, &r, p, p.T);
+    std::cout << "Second Stage Final State:" << std::endl
+              << r.pos.x << ", " << r.pos.y << ", " << r.vel.x << ", " << r.vel.y << std::endl
+              << "Desired Final State:" << std::endl
+              << fin.pos.x << ", " << fin.pos.y << ", " << fin.vel.x << ", " << fin.vel.y << std::endl;
+    
+  }
   
   p.cost = summary2.final_cost;
   
   while (p.cost > 1e-6) {
+    GetGuess(v0, vf, dx, params);
+    p = *params;
     p.T = t_max * static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     Solve(options, &stage1, &summary1);
     Solve(options, &stage2, &summary2);
@@ -174,15 +190,6 @@ bool GetSolution(RobotState<float> init,
   
   p.isInitialized = summary2.final_cost <= kCostThreshold_ && 
       summary2.final_cost > 0;
-  
-  Vector2f a12(p.a1, p.a2);
-  Vector2f a34(p.a3, p.a4);
-  a12 = R.transpose()*a12;
-  a34 = R.transpose()*a34;
-  p.a1 = a12.x();
-  p.a2 = a12.y();
-  p.a3 = a34.x();
-  p.a4 = a34.y();
   
   (*params) = p;
   
