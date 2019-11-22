@@ -35,13 +35,15 @@ class DataHandler():
         wvy = float(elems[4])
         return np.array([wx,wy,wvx,wvy])
     
-    def getSolutionFeatures(self, file):
+    def GetSolutionFeatures(self, file):
         features = [];
         with open(file) as f:
             line = f.readline()
-            elems = line.split(',')
-            for el in elems:
-                features += [float(el)]
+            while line:
+                elems = line.split(',')
+                for el in elems:
+                    features += [float(el)]
+                line = f.readline()
         return np.array(features)
     
     def getOptimalSolution(self, dx, v0x, vf, obs_t, obs_offset):
@@ -61,7 +63,7 @@ class DataHandler():
         T, C = self.getSolutionCost(self.sol_file)
         features = []
         if (self.need_features):
-            features = self.GetSolutionFEatures(self.sol_file)
+            features = self.GetSolutionFeatures(self.sol_file)
             features = np.hstack([dx, v0x, vf, obs_t, obs_offset, features])
         return T, C, self.sol_file, features
         
