@@ -5,11 +5,12 @@ import os
 import random
 
 class DataHandler():
-    def __init__(self, gamma, optimal_data, eval_data, need_features):
+    def __init__(self, gamma, optimal_data, eval_data, need_features, timeout):
         self.gamma = gamma
         self.sol_file = optimal_data
         self.eval_file = eval_data
         self.need_features = need_features
+        self.timeout = timeout
     
     def GetCost(self, T_opt, T_col, T):
         return (T + self.gamma*T_col)/T_opt - 1
@@ -52,13 +53,13 @@ class DataHandler():
             round(vf[0], 3), round(vf[1], 3), 
             round(obs_t, 3), round(obs_offset, 3))
         try:
-            status = subprocess.call(cmd, shell=True, timeout=1)
+            status = subprocess.call(cmd, shell=True, timeout=self.timeout)
         except:
             print("timeout on command:")
             print(cmd)
-            return float('inf'), []
+            return 1000, []
         if status > 0:
-            return float('inf'), []
+            return 1000, []
         
         T, C = self.getSolutionCost(self.sol_file)
         features = []
@@ -73,14 +74,14 @@ class DataHandler():
             round(vf[0],3),round(vf[1],3),round(wpt[0],3),round(wpt[1],3),
             round(wpt[2],3),round(wpt[3],3),round(obs_t,3),round(obs_offset,3))
         try:
-            status = subprocess.call(cmd, shell=True, timeout=1)
+            status = subprocess.call(cmd, shell=True, timeout=self.timeout)
         except:
             print("timeout on command:")
             print(cmd)
-            return float('inf'), float('inf')
+            return 1000, 1000
             
         if status > 0:
-            return float('inf'), float('inf')
+            return 1000, 1000
         
         f = open(self.eval_file, "r")
         line = f.readline()

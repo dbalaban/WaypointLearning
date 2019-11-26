@@ -49,6 +49,8 @@ int main(int argc, char **argv) {
   
   if (!didSucceed1 || !didSucceed2) {
     std::cout << "did not succeed\n";
+    std::cout << "Got to waypoint: " << didSucceed1 << " " << params1.cost
+              << "\nGot to finish: " << didSucceed2 << " " << params2.cost << std::endl;
     ofs.open(output_file);
     ofs << "tsocs could not find the solution";
     ofs.close();

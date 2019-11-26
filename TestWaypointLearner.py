@@ -12,7 +12,7 @@ def getSampleValues(n, value_range, isLogScale=False) :
   return values.tolist()
 
 def Train1Prob(dx, v0x, vf, obs_t, obs_offset):
-    data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True)
+    data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True, 1)
     T_opt, _, _, x = data_handler.getOptimalSolution(
                             dx, v0x, vf, obs_t, obs_offset)
     # x = np.ones(4)
@@ -39,7 +39,7 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset):
         net.update(np.array(Cs), wpts, np.vstack([x]*nsamples))
 
 def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
-    data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True)
+    data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True, 2)
     T_opt, _, _, x = data_handler.getOptimalSolution(
                             dx, v0x, vf, obs_t, obs_offset)
     best_cost = float('inf')
