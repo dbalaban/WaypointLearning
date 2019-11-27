@@ -5,11 +5,12 @@ import os
 import random
 
 class DataHandler():
-    def __init__(self, gamma, optimal_data, eval_data, need_features):
+    def __init__(self, gamma, optimal_data, eval_data, need_features, timeout):
         self.gamma = gamma
         self.sol_file = optimal_data
         self.eval_file = eval_data
         self.need_features = need_features
+        self.timeout = timeout
     
     def GetCost(self, T_opt, T_col, T):
         return (T + self.gamma*T_col)/T_opt - 1
@@ -35,13 +36,15 @@ class DataHandler():
         wvy = float(elems[4])
         return np.array([wx,wy,wvx,wvy])
     
-    def getSolutionFeatures(self, file):
+    def GetSolutionFeatures(self, file):
         features = [];
         with open(file) as f:
             line = f.readline()
-            elems = line.split(',')
-            for el in elems:
-                features += [float(el)]
+            while line:
+                elems = line.split(',')
+                for el in elems:
+                    features += [float(el)]
+                line = f.readline()
         return np.array(features)
     
     def getOptimalSolution(self, dx, v0x, vf, obs_t, obs_offset):
@@ -50,18 +53,18 @@ class DataHandler():
             round(vf[0], 3), round(vf[1], 3), 
             round(obs_t, 3), round(obs_offset, 3))
         try:
-            status = subprocess.call(cmd, shell=True, timeout=1)
+            status = subprocess.call(cmd, shell=True, timeout=self.timeout)
         except:
             print("timeout on command:")
             print(cmd)
-            return float('inf'), []
+            return 1000, []
         if status > 0:
-            return float('inf'), []
+            return 1000, []
         
         T, C = self.getSolutionCost(self.sol_file)
         features = []
         if (self.need_features):
-            features = self.GetSolutionFEatures(self.sol_file)
+            features = self.GetSolutionFeatures(self.sol_file)
             features = np.hstack([dx, v0x, vf, obs_t, obs_offset, features])
         return T, C, self.sol_file, features
         
@@ -71,14 +74,14 @@ class DataHandler():
             round(vf[0],3),round(vf[1],3),round(wpt[0],3),round(wpt[1],3),
             round(wpt[2],3),round(wpt[3],3),round(obs_t,3),round(obs_offset,3))
         try:
-            status = subprocess.call(cmd, shell=True, timeout=1)
+            status = subprocess.call(cmd, shell=True, timeout=self.timeout)
         except:
             print("timeout on command:")
             print(cmd)
-            return float('inf'), float('inf')
+            return 1000, 1000
             
         if status > 0:
-            return float('inf'), float('inf')
+            return 1000, 1000
         
         f = open(self.eval_file, "r")
         line = f.readline()

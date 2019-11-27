@@ -63,13 +63,13 @@ import DataHandler as dh
 
 #time stamps of latest plot 1.4658 2.35274 2.46999 2.2767
 
-<<<<<<< HEAD
 
     
-=======
+
 class CoordinateDecent():
-    def __init__(self, data_handler, eps, step_init, step_decay):
-        self.eps = eps
+    def __init__(self, data_handler, eps1, eps2, step_init, step_decay):
+        self.eps1 = eps1
+        self.eps2 = eps2
         self.step_init = step_init
         self.handler = data_handler
         self.lr = step_decay
@@ -83,12 +83,12 @@ class CoordinateDecent():
         Cs = np.array([float('inf'), C, float('inf')])
         waypoints = np.copy(wpt)
         loss = [C]
-        while D > self.eps:
+        while D > self.eps1:
             wpt_save = np.copy(wpt)
             for ax in range(4):
                 step = np.zeros(4)
                 step[ax] = self.step_init
-                while step[ax]>0.001:
+                while step[ax]>self.eps2:
                     if Cs[0] == float('inf'):
                         tsocs_calls  += 1
                         wpt_temp = wpt - step
@@ -101,8 +101,6 @@ class CoordinateDecent():
                         T, T_col = self.handler.Evaluate(dx, v0x, vf, wpt_temp,
                                                          obs_t, obs_offset)
                         Cs[2] = self.handler.GetCost(T_opt, T_col, T)
-                        
-                    print(Cs)
                         
                     idx = np.argmin(Cs)
                     if idx == 0:
@@ -128,13 +126,14 @@ class CoordinateDecent():
 
 if __name__ == "__main__":
     data_handler = dh.DataHandler(500, "optimal.csv", "eval.csv", False)
-    cd = CoordinateDecent(data_handler, 0.001, 1.5, .75)
+    cd = CoordinateDecent(data_handler, 0.001, 0.001, 5, .8)
     dx = np.array([0, 1])
     v0x = 1
     vf = np.array([0, 1])
     obs_t=0.5
     obs_offset=0.0
     C, wpt_opt, count, wpts, loss = cd.solve(dx, v0x, vf, obs_t, obs_offset)
-    print(wpts)
+    print(len(wpts))
     print(C)
->>>>>>> 96bf4a8deaf358f3da150083315ff1e097453050
+
+    print(count)

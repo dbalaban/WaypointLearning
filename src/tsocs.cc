@@ -179,17 +179,20 @@ bool GetSolution(RobotState<float> init,
   
   p.cost = summary2.final_cost;
   
-  while (p.cost > 1e-6) {
+  p.isInitialized = summary2.final_cost <= kCostThreshold_ && 
+      summary2.final_cost > 0;
+  
+  while (!p.isInitialized) {
     GetGuess(v0, vf, dx, params);
     p = *params;
     p.T = t_max * static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     Solve(options, &stage1, &summary1);
     Solve(options, &stage2, &summary2);
     p.cost = summary2.final_cost;
-  }
   
-  p.isInitialized = summary2.final_cost <= kCostThreshold_ && 
-      summary2.final_cost > 0;
+    p.isInitialized = summary2.final_cost <= kCostThreshold_ && 
+        summary2.final_cost > 0;
+  }
   
   (*params) = p;
   
