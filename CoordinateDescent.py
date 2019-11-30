@@ -11,6 +11,7 @@ import csv
 import os
 import random
 import DataHandler as dh
+from PlotTrajectory import PlotTraj
 #./bin/solve p1 p2 p3 p4 p5 p6 p7 p8
 #
 #p1: the name of the output file to print data to
@@ -83,6 +84,7 @@ class CoordinateDecent():
         Cs = np.array([float('inf'), C, float('inf')])
         waypoints = np.copy(wpt)
         loss = [C]
+        fig,ax1=plt.subplots()
         while D > self.eps1:
             wpt_save = np.copy(wpt)
             for ax in range(4):
@@ -119,21 +121,23 @@ class CoordinateDecent():
                         Cs[1] = Cs[2]
                         Cs[0] = temp
                         Cs[2] = float('inf')
+                    
+                    PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpt,ax1)
             D = np.linalg.norm(wpt - wpt_save)
             waypoints = np.vstack([waypoints, wpt])
             loss += [Cs[1]]
         return Cs[1], wpt, tsocs_calls, waypoints, loss                
 
 if __name__ == "__main__":
-    data_handler = dh.DataHandler(500, "optimal.csv", "eval.csv", False)
+    data_handler = dh.DataHandler(500, "optimal.csv", "eval.csv", False,1)
     cd = CoordinateDecent(data_handler, 0.001, 0.001, 5, .8)
-    dx = np.array([0, 1])
+    dx = np.array([1, 1])
     v0x = 1
-    vf = np.array([0, 1])
+    vf = np.array([1, 1])
     obs_t=0.5
     obs_offset=0.0
     C, wpt_opt, count, wpts, loss = cd.solve(dx, v0x, vf, obs_t, obs_offset)
     print(len(wpts))
     print(C)
-
+    
     print(count)

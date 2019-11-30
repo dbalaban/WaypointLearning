@@ -2,6 +2,9 @@ import DataHandler as dh
 import WaypointDistributionNN as wdnn
 import numpy as np
 from numpy.random import multivariate_normal as mltnrm
+import torch
+from PlotTrajectory import PlotTraj
+import matplotlib.pyplot as plt
 
 def getSampleValues(n, value_range, isLogScale=False) :
   if isLogScale :
@@ -36,6 +39,7 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset):
             C_tot += C
         print(C_tot/nsamples)
         print(wpts.shape)
+        
         net.update(np.array(Cs), wpts, np.vstack([x]*nsamples))
 
 def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
@@ -48,6 +52,7 @@ def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
     for i in range(n):
         net = wdnn.WaypointDistributionNN(len(x), lr, clamp)
         count = 0
+        fig,ax1=plt.subplots()
         while count < steps:
             count += 1
             mu, S = net(x)
@@ -68,6 +73,9 @@ def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
                 best_cost = C_avg
                 best_mu[:] = mu
                 best_sig[:] = sig
+            
+            PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
+            
             net.update(np.array(Cs), wpts, np.vstack([x]*ss))
     return best_cost, best_mu, best_sig
 
