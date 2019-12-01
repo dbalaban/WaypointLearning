@@ -40,13 +40,17 @@ class WaypointDistributionNN(nn.Module):
         # self.fc5 = nn.Linear(4*4+4, 4*4+4).double()
         # self.fc5.weight.data = torch.diag(torch.tensor([1] * 20)).double()
         
-        self.fc1 = nn.Linear(x_size, x_size, bias=True).double()
-        self.fc2 = nn.Linear(x_size, 8, bias=True).double()
-        self.fc3 = nn.Linear(8,8, bias=True).double()
+        self.fc1 = nn.Linear(x_size, 16, bias=True).double()
+        self.fc2 = nn.Linear(16, 16, bias=False).double()
+        # self.fc2.weight.data[:,:] = torch.tensor([0.38167919,  0.39101533, -0.44043292,  0.05524485, 1, 1, 1, 1]).view(8,1)
+        # print(self.fc2.weight.data.shape)
+        self.fc3 = nn.Linear(16,8, bias=True).double()
+        # print(self.fc3.weight.data.shape)
         # self.fc1.weight.data = torch.diag(torch.tensor([1]*x_size)).double()
-        # self.fc2.weight.data[0:4,:] = torch.diag(torch.tensor([10]*4)).double()
+        # self.fc2.weight.data[0:4,0] = torch.tensor([0]*4).double()
+        # self.fc2.weight.data[4:,0] = torch.tensor([1]*4).double()
         # self.fc2.weight.data[4:,:] = torch.diag(torch.tensor([1]*4)).double()
-        # self.fc3.weight.data = torch.diag(torch.tensor([1]*8)).double()
+        self.fc3.weight.data[:,4:] *= 10
     
     def forward(self, x):
         # x = F.relu(self.conv1(x.double()))
@@ -60,10 +64,13 @@ class WaypointDistributionNN(nn.Module):
         # x[:,4:] = torch.abs(x[:,4:].clone())
         # y = self.fc5(x)
         # y[:,4:] = torch.abs(y[:,4:].clone())
-        x = x[:,0,:]
+        # x = x[:,0,:]
+        # x = F.relu(self.fc1(x))
+        # print(x.shape)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         y = self.fc3(x)
+        # y = self.fc2(x)
         return y
         
     def loss(self, y, delta, P):
@@ -79,7 +86,7 @@ class WaypointDistributionNN(nn.Module):
         #print("weighted:")
         #print(weight_dot)
         total = weight_dot.sum()/y.shape[0]
-        print(total)
+        # print(total)
         return total
         for i in range(y.shape[0]):
             mu = y[i,0:4].clone().view(4,1)
@@ -101,20 +108,24 @@ class WaypointDistributionNN(nn.Module):
         optimizer.zero_grad()
         
         x = torch.from_numpy(state).double()
-        y = self.fc2(x)
+        y = self.forward(x)
         mu = y[:,0:4]
         sig = y[:,4:]
         S = torch.diag_embed(torch.mul(sig,sig))
         Sinv = torch.inverse(S)
         P = torch.from_numpy(P)
         dmu = (mu-P).view(x.shape[0], 1, 4)
+        # print(Sinv.shape)
+        # print(dmu.shape)
         Sinvdmu = torch.bmm(Sinv, dmu.permute(0,2,1))
         # Sinvdmu = dmu.permute(0,2,1)
-        dotprod = torch.bmm(dmu, Sinvdmu).view(x.shape[0])/2
-        det = torch.log(torch.det(S))/2
-        detpdotprod = dotprod - det
+        dotprod = torch.bmm(dmu, Sinvdmu).view(x.shape[0])
+        det = torch.log(torch.det(S))
+        detpdotprod = -(dotprod + det)/2
         weighted = detpdotprod*torch.from_numpy(deltas).view(x.shape[0])
         loss = -weighted.sum()/x.shape[0]
+        # print(loss)
+        # print(detpdotprod)
         loss.backward()
         # print(self.fc2.weight.data)
         # print(loss)
@@ -123,11 +134,11 @@ class WaypointDistributionNN(nn.Module):
         # print(dw)
         # print(dw)
         # self.fc2.weight.data += dw
-        # output.register_hook(lambda grad: print(grad))
-        self.fc2.weight.register_hook(lambda grad: grad.clamp_(self.clamp,self.clamp))
-        # self.fc2.weight.register_hook(lambda grad: print(grad.norm()))
+        # det.register_hook(lambda grad: print(grad))
+        self.fc2.weight.register_hook(lambda grad: grad.clamp_(-self.clamp,self.clamp))
+        # self.fc2.weight.register_hook(lambda grad: print(grad))
         optimizer.step()
-        # print(self.fc2.weight.data)
+        # print(self.fc2.weight.grad)
         
         return None
     
@@ -140,7 +151,7 @@ class WaypointDistributionNN(nn.Module):
 
     def __call__(self,s):
         x = torch.from_numpy(s).double()
-        y = self.forward(x.unsqueeze(0).unsqueeze(0))
+        y = self.forward(x.unsqueeze(0))
         mu = y[:,0:4]
         sig = y[:,4:]
         S = torch.diag_embed(torch.mul(sig,sig))

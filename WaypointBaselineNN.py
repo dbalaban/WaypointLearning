@@ -13,12 +13,13 @@ class WaypointBaselineNN(nn.Module):
         self.clamp = clamp
         
         self.fc1 = nn.Linear(x_size, x_size, bias=True).double()
-        self.fc2 = nn.Linear(x_size, 1, bias=True).double()
+        self.fc2 = nn.Linear(x_size, 2*x_size, bias=True).double()
+        self.fc3 = nn.Linear(2*x_size, 1, bias=True).double()
         
     def forward(self, x):
-        x = x[:,0,:]
         x = F.relu(self.fc1(x))
-        y = self.fc2(x)
+        x = F.relu(self.fc2(x))
+        y = self.fc3(x)
         return y
 
     def __call__(self,s):
@@ -26,14 +27,14 @@ class WaypointBaselineNN(nn.Module):
         y = self.forward(x)
         return y.detach().numpy()[0]
 
-    def update(self,alpha,Cs,state):
+    def update(self,Rs,state):
         loss = nn.MSELoss()
-        optimizer = optim.Adam(self.parameters(), lr=alpha)
+        optimizer = optim.Adam(self.parameters(), lr=self.alpha)
         optimizer.zero_grad()
         x = torch.from_numpy(state).double()
-        output = self(x).double()
-        target = torch.from_numpy(Cs).double()
-        l = loss(output, target)/2
+        output = self.forward(x)
+        target = torch.from_numpy(Rs).double()
+        l = loss(output, target.view(output.shape[0],1))/2
         l.backward()
         optimizer.step()
         

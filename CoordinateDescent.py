@@ -122,7 +122,7 @@ class CoordinateDecent():
         return Cs[1], wpt, tsocs_calls, waypoints, loss                
 
 if __name__ == "__main__":
-    data_handler = dh.DataHandler(500, "optimal.csv", "eval.csv", False)
+    data_handler = dh.DataHandler(500, "optimal.csv", "eval.csv", False, 2)
     cd = CoordinateDecent(data_handler, 0.001, 0.001, 5, .8)
     dx = np.array([0, 1])
     v0x = 1
@@ -130,6 +130,7 @@ if __name__ == "__main__":
     obs_t=0.5
     obs_offset=0.0
     C, wpt_opt, count, wpts, loss = cd.solve(dx, v0x, vf, obs_t, obs_offset)
+    print(wpt_opt)
     print(len(wpts))
     print(C)
     print(count)

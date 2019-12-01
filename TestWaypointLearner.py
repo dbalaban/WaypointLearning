@@ -1,5 +1,6 @@
 import DataHandler as dh
 import WaypointDistributionNN as wdnn
+import WaypointBaselineNN as wbnn
 import numpy as np
 from numpy.random import multivariate_normal as mltnrm
 
@@ -11,23 +12,29 @@ def getSampleValues(n, value_range, isLogScale=False) :
     values = np.exp(np.array(values))
   return values.tolist()
 
-def Train1Prob(dx, v0x, vf, obs_t, obs_offset):
+def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
     data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True, 1)
     T_opt, _, _, x = data_handler.getOptimalSolution(
                             dx, v0x, vf, obs_t, obs_offset)
-    # x = np.ones(4)
-    nsamples = 10
-    net = wdnn.WaypointDistributionNN(len(x), 0.0001)
+    x = np.ones(1)
+    nsamples = 100
+    net = wdnn.WaypointDistributionNN(len(x), 0.01, 1)
+    baseline = wbnn.WaypointBaselineNN(4, 0.01, 1e2)
     
     count = 0
-    while count < 1000:
+    while count < 10000:
         count += 1        
         mu, S = net(x)
         print(mu)
-        print(np.mean(S))
+        print(np.sum(S))
+        print("Cost at mu:")
+        T, T_col = data_handler.Evaluate(dx, v0x, vf, mu[0,:], obs_t, obs_offset)
+        C = data_handler.GetCost(T_opt, T_col, T)
+        print(C)
         wpts = mltnrm(mu[0,:], S[0,:], nsamples)
         Cs = []
         C_tot = 0
+        print("average cost of distribution:")
         for i in range(nsamples):
             T, T_col = data_handler.Evaluate(
                 dx, v0x, vf, wpts[i,:], obs_t, obs_offset)
@@ -36,7 +43,15 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset):
             C_tot += C
         print(C_tot/nsamples)
         print(wpts.shape)
-        net.update(np.array(Cs), wpts, np.vstack([x]*nsamples))
+        if use_baseline:
+            deltas = - (np.array(Cs) + baseline(wpts))
+            print("baseline error:")
+            print(np.sum(np.abs(deltas)))
+            baseline.update(-np.array(Cs), wpts)
+            net.update(deltas, wpts, np.vstack([x]*nsamples))
+        else:
+            net.update(-np.array(Cs), wpts, np.vstack([x]*nsamples))
+    print(S)
 
 def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
     data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True, 2)
@@ -68,7 +83,7 @@ def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
                 best_cost = C_avg
                 best_mu[:] = mu
                 best_sig[:] = sig
-            net.update(np.array(Cs), wpts, np.vstack([x]*ss))
+            net.update(-np.array(Cs), wpts, np.vstack([x]*ss))
     return best_cost, best_mu, best_sig
 
 def HyperSearch(dx, v0x, vf, obs_t, obs_offset):
@@ -101,29 +116,42 @@ def HyperSearch(dx, v0x, vf, obs_t, obs_offset):
 
 def TestNet():
     # net = wdnn.WaypointDistributionNN(4, 0.01) # learns mu, not sigma
-    net = wdnn.WaypointDistributionNN(4, 0.01)
+    net = wdnn.WaypointDistributionNN(1, 0.001, 1e2)
     nsamples = 100
-    x = np.ones(4)
+    x = np.ones(1)
     count = 0
-    while count < 10000:
+    while count < 1000:
         count += 1
         mu, S = net(x)
         print(mu)
         #print(S[0,:])
         print(np.sum(S))
         wpts = mltnrm(mu[0,:], S[0,:], nsamples)
+        print(wpts.shape)
         Cs = np.linalg.norm(wpts, axis=1)
         #print(Cs)
         print(np.sum(Cs)/nsamples)
-        net.update(Cs, wpts, np.vstack([x]*nsamples))
+        net.update(-Cs, wpts, np.vstack([x]*nsamples))
     print(S)
+
+def TestBaseLine():
+    net = wbnn.WaypointBaselineNN(4, 0.01, 1e2)
+    nsamples = 100
+    for i in range(100):
+        S = np.identity(4)
+        wpts = mltnrm(np.array([0,0,0,0]), S, nsamples)
+        Cs = np.linalg.norm(wpts, axis=1)
+        deltas = - (Cs + net(wpts))
+        print(np.sum(np.abs(deltas)))
+        net.update(-Cs, wpts)
 
 if __name__ == "__main__":
     # TestNet()
+    # TestBaseLine()
     dx = np.array([0, 1])
     v0x = 1
     vf = np.array([0, 1])
     obs_t=0.5
     obs_offset=0.0
-    # Train1Prob(dx, v0x, vf, obs_t, obs_offset)
-    HyperSearch(dx, v0x, vf, obs_t, obs_offset)
+    Train1Prob(dx, v0x, vf, obs_t, obs_offset)
+    # HyperSearch(dx, v0x, vf, obs_t, obs_offset)

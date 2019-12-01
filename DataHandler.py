@@ -73,6 +73,7 @@ class DataHandler():
             self.eval_file,round(dx[0],3),round(dx[1],3),round(v0x, 3),
             round(vf[0],3),round(vf[1],3),round(wpt[0],3),round(wpt[1],3),
             round(wpt[2],3),round(wpt[3],3),round(obs_t,3),round(obs_offset,3))
+        # print(cmd)
         try:
             status = subprocess.call(cmd, shell=True, timeout=self.timeout)
         except:
