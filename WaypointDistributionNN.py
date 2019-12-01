@@ -1,8 +1,8 @@
 import numpy as np
 from math import floor
-
-import torch.optim as optim
 import torch
+import torch.optim as optim
+
 import torch.nn as nn
 import torch.nn.functional as F
 

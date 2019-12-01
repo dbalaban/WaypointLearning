@@ -3,6 +3,9 @@ import WaypointDistributionNN as wdnn
 import WaypointBaselineNN as wbnn
 import numpy as np
 from numpy.random import multivariate_normal as mltnrm
+import torch
+from PlotTrajectory import PlotTraj
+import matplotlib.pyplot as plt
 
 def getSampleValues(n, value_range, isLogScale=False) :
   if isLogScale :
@@ -63,6 +66,7 @@ def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
     for i in range(n):
         net = wdnn.WaypointDistributionNN(len(x), lr, clamp)
         count = 0
+        fig,ax1=plt.subplots()
         while count < steps:
             count += 1
             mu, S = net(x)

@@ -3,6 +3,7 @@ import subprocess
 import csv
 import os
 import random
+from PlotTrajectory import PlotTraj 
 
 class DataHandler():
     def __init__(self, gamma, optimal_data, eval_data, need_features, timeout):
@@ -60,7 +61,7 @@ class DataHandler():
             return 1000, []
         if status > 0:
             return 1000, []
-        
+    
         T, C = self.getSolutionCost(self.sol_file)
         features = []
         if (self.need_features):

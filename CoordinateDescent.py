@@ -11,6 +11,7 @@ import csv
 import os
 import random
 import DataHandler as dh
+from PlotTrajectory import PlotTraj
 #./bin/solve p1 p2 p3 p4 p5 p6 p7 p8
 #
 #p1: the name of the output file to print data to
@@ -63,6 +64,9 @@ import DataHandler as dh
 
 #time stamps of latest plot 1.4658 2.35274 2.46999 2.2767
 
+
+    
+
 class CoordinateDecent():
     def __init__(self, data_handler, eps1, eps2, step_init, step_decay):
         self.eps1 = eps1
@@ -80,6 +84,7 @@ class CoordinateDecent():
         Cs = np.array([float('inf'), C, float('inf')])
         waypoints = np.copy(wpt)
         loss = [C]
+        fig,ax1=plt.subplots()
         while D > self.eps1:
             wpt_save = np.copy(wpt)
             for ax in range(4):
@@ -116,6 +121,8 @@ class CoordinateDecent():
                         Cs[1] = Cs[2]
                         Cs[0] = temp
                         Cs[2] = float('inf')
+                    
+                    PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpt,ax1)
             D = np.linalg.norm(wpt - wpt_save)
             waypoints = np.vstack([waypoints, wpt])
             loss += [Cs[1]]
@@ -133,4 +140,5 @@ if __name__ == "__main__":
     print(wpt_opt)
     print(len(wpts))
     print(C)
+    
     print(count)
