@@ -19,28 +19,36 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
     data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True, 1)
     T_opt, _, _, x = data_handler.getOptimalSolution(
                             dx, v0x, vf, obs_t, obs_offset)
+    obs_x=x[13]
+    obs_y=x[14]
+    print(obs_x)
+    print('done')
+    print(obs_y)
     x = np.ones(1)
     nsamples = 100
     net = wdnn.WaypointDistributionNN(len(x), 0.01, 1)
     baseline = wbnn.WaypointBaselineNN(4, 0.01, 1e2)
-    
+    fig,ax1=plt.subplots()
     count = 0
-    while count < 10000:
+    while count < 1000:
         count += 1        
         mu, S = net(x)
         print(mu)
         print(np.sum(S))
         print("Cost at mu:")
-        T, T_col = data_handler.Evaluate(dx, v0x, vf, mu[0,:], obs_t, obs_offset)
+        T, T_col = data_handler.Evaluate(dx, v0x, vf, mu[0,:], obs_x, obs_y)
         C = data_handler.GetCost(T_opt, T_col, T)
         print(C)
         wpts = mltnrm(mu[0,:], S[0,:], nsamples)
+        if count>990:
+            PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
+            
         Cs = []
         C_tot = 0
         print("average cost of distribution:")
         for i in range(nsamples):
             T, T_col = data_handler.Evaluate(
-                dx, v0x, vf, wpts[i,:], obs_t, obs_offset)
+                dx, v0x, vf, wpts[i,:], obs_x, obs_y)
             C = data_handler.GetCost(T_opt, T_col, T)
             Cs += [C/nsamples]
             C_tot += C
@@ -60,13 +68,15 @@ def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
     data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True, 2)
     T_opt, _, _, x = data_handler.getOptimalSolution(
                             dx, v0x, vf, obs_t, obs_offset)
+    obs_x=x[13]
+    obs_y=x[14]
     best_cost = float('inf')
     best_mu = float('inf')*np.ones(4)
     best_sig = float('inf')*np.ones(4)
     for i in range(n):
         net = wdnn.WaypointDistributionNN(len(x), lr, clamp)
         count = 0
-        fig,ax1=plt.subplots()
+       
         while count < steps:
             count += 1
             mu, S = net(x)
@@ -78,7 +88,7 @@ def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
             C_tot = 0
             for i in range(ss):
                 T, T_col = data_handler.Evaluate(
-                    dx, v0x, vf, wpts[i,:], obs_t, obs_offset)
+                    dx, v0x, vf, wpts[i,:], obs_x, obs_y)
                 C = data_handler.GetCost(T_opt, T_col, T)
                 Cs += [C/ss]
                 C_tot += C

@@ -45,7 +45,9 @@ class DataHandler():
                 elems = line.split(',')
                 for el in elems:
                     features += [float(el)]
+                    
                 line = f.readline()
+        
         return np.array(features)
     
     def getOptimalSolution(self, dx, v0x, vf, obs_t, obs_offset):
@@ -67,13 +69,14 @@ class DataHandler():
         if (self.need_features):
             features = self.GetSolutionFeatures(self.sol_file)
             features = np.hstack([dx, v0x, vf, obs_t, obs_offset, features])
+        
         return T, C, self.sol_file, features
         
-    def Evaluate(self, dx, v0x, vf, wpt, obs_t, obs_offset):
+    def Evaluate(self, dx, v0x, vf, wpt, obs_x, obs_y):
         cmd = "./bin/eval {} {} {} {} {} {} {} {} {} {} {} {}".format(
             self.eval_file,round(dx[0],3),round(dx[1],3),round(v0x, 3),
             round(vf[0],3),round(vf[1],3),round(wpt[0],3),round(wpt[1],3),
-            round(wpt[2],3),round(wpt[3],3),round(obs_t,3),round(obs_offset,3))
+            round(wpt[2],3),round(wpt[3],3),round(obs_x,3),round(obs_y,3))
         # print(cmd)
         try:
             status = subprocess.call(cmd, shell=True, timeout=self.timeout)

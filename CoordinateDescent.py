@@ -82,9 +82,18 @@ class CoordinateDecent():
         wpt = self.handler.getInitialWaypoint(f)
         D = float('inf')
         Cs = np.array([float('inf'), C, float('inf')])
+        
+        fo = open(f, "r")
+        for i in range(2):
+            line = fo.readline()
+        fo.close()
+        elems = line.split(',')
+        obs_x = float(elems[0])
+        obs_y = float(elems[1])
+        
         waypoints = np.copy(wpt)
         loss = [C]
-        fig,ax1=plt.subplots()
+        
         while D > self.eps1:
             wpt_save = np.copy(wpt)
             for ax in range(4):
@@ -95,13 +104,13 @@ class CoordinateDecent():
                         tsocs_calls  += 1
                         wpt_temp = wpt - step
                         T, T_col = self.handler.Evaluate(dx, v0x, vf, wpt_temp,
-                                                      obs_t, obs_offset)
+                                                      obs_x, obs_y)
                         Cs[0] = self.handler.GetCost(T_opt, T_col, T)
                     if Cs[2] == float('inf'):
                         tsocs_calls  += 1
                         wpt_temp = wpt + step
                         T, T_col = self.handler.Evaluate(dx, v0x, vf, wpt_temp,
-                                                         obs_t, obs_offset)
+                                                         obs_x, obs_y)
                         Cs[2] = self.handler.GetCost(T_opt, T_col, T)
                         
                     idx = np.argmin(Cs)
@@ -122,7 +131,7 @@ class CoordinateDecent():
                         Cs[0] = temp
                         Cs[2] = float('inf')
                     
-                    PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpt,ax1)
+                    
             D = np.linalg.norm(wpt - wpt_save)
             waypoints = np.vstack([waypoints, wpt])
             loss += [Cs[1]]
@@ -136,7 +145,9 @@ if __name__ == "__main__":
     vf = np.array([0, 1])
     obs_t=0.5
     obs_offset=0.0
+    fig,ax1=plt.subplots()
     C, wpt_opt, count, wpts, loss = cd.solve(dx, v0x, vf, obs_t, obs_offset)
+    PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
     print(wpt_opt)
     print(len(wpts))
     print(C)
