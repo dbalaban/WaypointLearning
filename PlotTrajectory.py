@@ -11,6 +11,9 @@ import matplotlib.pyplot as plt
 import DataHandler as dh
 import csv
 import subprocess
+from TestWaypointLearner import HyperSearch
+from numpy.random import multivariate_normal as mltnrm
+from CoordinateDescent import CoordinateDecent
 
 #token is whether thee initial trajectory is plot (token=0) or the trajectory with waypoint (token=1)
 
@@ -121,19 +124,25 @@ def PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1):
     return ax1
 
 if __name__ == "__main__":
-    dx = np.array([0, 1])
+    dx = np.array([1, 1])
     v0x = 1
     vf = np.array([0, 1])
     obs_t=0.5
     obs_offset=0.0
     fig, ax1 = plt.subplots()
-    datahandler = dh.DataHandler(10, "optimal.csv", "eval.csv", True, 1)
-    datahandler2 = dh.DataHandler(10, "optimal.csv", "eval_nn.csv", True, 1)
+    
+    mu,sig=HyperSearch(dx, v0x, vf, obs_t, obs_offset)
+    #wpt = mltnrm(mu, np.diag(sig), 1)
+    datahandler = dh.DataHandler(100, "optimal.csv", "eval.csv", True, 1)
+    datahandler2 = dh.DataHandler(100, "optimal.csv", "eval_nn.csv", True, 1)
     ax1,obs_xy = PlotOpimalSol(dx, v0x, vf, obs_t, obs_offset, ax1, datahandler)
-    wpt = np.array([ 0.22341839,  0.13741288, -0.42356584,  0.44567634])
-    wpt2 = np.array([0.14423926,  0.18626884, -0.38961458,  0.53745378])
-    ax1 = PlotWaypointTraj(dx, v0x, vf, obs_t, obs_xy, wpt, ax1, datahandler, "Coordinate Decent Waypoint")
-    ax1 = PlotWaypointTraj(dx, v0x, vf, obs_t, obs_xy, wpt2, ax1, datahandler2, "Learned Waypoint")
+    
+    cd = CoordinateDecent(datahandler, 0.001, 0.001, 5, .8)
+    C, wpt_opt, count, wpts, loss = cd.solve(dx, v0x, vf, obs_t, obs_offset)
+   # wpt = np.array([ 0.22341839,  0.13741288, -0.42356584,  0.44567634])
+   # wpt2 = np.array([0.14423926,  0.18626884, -0.38961458,  0.53745378])
+    ax1 = PlotWaypointTraj(dx, v0x, vf, obs_t, obs_xy, wpt_opt, ax1, datahandler, "Coordinate Decent Waypoint")
+    ax1 = PlotWaypointTraj(dx, v0x, vf, obs_t, obs_xy, mu, ax1, datahandler2, "Learned Waypoint")
     ax1.legend()
     plt.axis('equal')
     plt.show()

@@ -5,7 +5,7 @@ import numpy as np
 import csv
 from numpy.random import multivariate_normal as mltnrm
 import torch
-from PlotTrajectory import PlotTraj
+#from PlotTrajectory import PlotTraj
 import matplotlib.pyplot as plt
 
 def getSampleValues(n, value_range, isLogScale=False) :
@@ -62,9 +62,9 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
         print("Cost at mu:")
         print(C)
         wpts = mltnrm(mu[0,:], S[0,:], nsamples)
-        if count>990:
-            PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
-            
+#        if count>990:
+#            PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
+#            
         Cs = []
         C_tot = 0
         print("average cost of distribution:")
@@ -135,7 +135,7 @@ def HyperSearch(dx, v0x, vf, obs_t, obs_offset):
     lr_values = getSampleValues(10, [1e-5, 1e-1], True)
     ss_values = np.floor(getSampleValues(5, [1e0, 2e2], False)).astype(np.int)
     n = 5
-    steps = 1000
+    steps = 10
     
     best_costs = float('inf')*np.ones([10,10,5])
     best_values = np.zeros([10,10,5,8])
@@ -156,7 +156,7 @@ def HyperSearch(dx, v0x, vf, obs_t, obs_offset):
     print(np.min(best_costs))
     np.savez("hyper_search.np", costs=best_costs,
              values=best_values, params=hyper)
-                
+    return mu,sig            
 
 def TestNet():
     # net = wdnn.WaypointDistributionNN(4, 0.01) # learns mu, not sigma

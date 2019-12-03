@@ -11,7 +11,7 @@ import csv
 import os
 import random
 import DataHandler as dh
-from PlotTrajectory import PlotTraj
+#from PlotTrajectory import PlotTraj
 #./bin/solve p1 p2 p3 p4 p5 p6 p7 p8
 #
 #p1: the name of the output file to print data to
@@ -152,4 +152,4 @@ if __name__ == "__main__":
     print(C)
     
     print(count)
-    PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
+    #PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
