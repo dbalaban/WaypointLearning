@@ -2,6 +2,7 @@ import DataHandler as dh
 import WaypointDistributionNN as wdnn
 import WaypointBaselineNN as wbnn
 import numpy as np
+import csv
 from numpy.random import multivariate_normal as mltnrm
 import torch
 from PlotTrajectory import PlotTraj
@@ -24,20 +25,41 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
     print(obs_x)
     print('done')
     print(obs_y)
+    
+    f = open("wpt_data.csv", "w+")
+    f_writer = csv.writer(f, delimiter=',')
+    if use_baseline:
+        f_writer.writerow(["mu_x", "mu_y", "mu_vx", "mu_vy",
+                        "var_x", "var_y", "var_vx", "var_vy",
+                        "mu_cost", "avg_cost", "baseline_error"])
+    else:
+        f_writer.writerow(["mu_x", "mu_y", "mu_vx", "mu_vy",
+                        "var_x", "var_y", "var_vx", "var_vy",
+                        "mu_cost", "avg_cost"])
+        
+    f.close()
+    
     x = np.ones(1)
     nsamples = 100
     net = wdnn.WaypointDistributionNN(len(x), 0.01, 1)
     baseline = wbnn.WaypointBaselineNN(len(x), 0.01, 1e2)
     fig,ax1=plt.subplots()
-    count = 0
-    while count < 1000:
-        count += 1        
+    count = -1
+    n = 1000
+    if use_baseline:
+        data = np.zeros([n, 11])
+    else :
+        data = np.zeros([n, 10])
+    for count in range(n):      
         mu, S = net(x)
+        data[count,0:4] = mu
+        data[count,4:8] = np.diag(S[0,:])
         print(mu)
         print(np.sum(S))
-        print("Cost at mu:")
         T, T_col = data_handler.Evaluate(dx, v0x, vf, mu[0,:], obs_x, obs_y)
         C = data_handler.GetCost(T_opt, T_col, T)
+        data[count, 8] = C
+        print("Cost at mu:")
         print(C)
         wpts = mltnrm(mu[0,:], S[0,:], nsamples)
         if count>990:
@@ -53,16 +75,24 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
             Cs += [C/nsamples]
             C_tot += C
         print(C_tot/nsamples)
-        print(wpts.shape)
+        data[count, 9] = C_tot/nsamples
         if use_baseline:
             deltas = - (np.array(Cs) + baseline(x))
             print("baseline error:")
             print(np.sum(np.abs(deltas)))
+            data[count, 10] = np.sum(np.abs(deltas))
             baseline.update(-np.array(Cs), np.vstack([x]*nsamples))
             net.update(deltas, wpts, np.vstack([x]*nsamples))
         else:
             net.update(-np.array(Cs), wpts, np.vstack([x]*nsamples))
-    print(S)
+        f = open("wpt_data.csv", "a")
+        f_writer = csv.writer(f, delimiter=',')
+        f_writer.writerow(data[count,:])
+        f.close()
+        
+    best = np.argmin(data[:,8])
+    print(data[best,:])
+    data_handler.Evaluate(dx, v0x, vf, data[best,0:4], obs_x, obs_y)
 
 def GetBestModel(clamp, lr, ss, n, steps, dx, v0x, vf, obs_t, obs_offset):
     data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True, 2)
