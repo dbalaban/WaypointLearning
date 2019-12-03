@@ -11,7 +11,7 @@ def getSampleValues(n, value_range, isLogScale=False) :
   return values.tolist()
 
 def collectProblemData(dx, v0x, vf, obs_t, obs_offset):
-    data_handler = dh.DataHandler(500, "optimal.csv", "eval.csv", False)
+    data_handler = dh.DataHandler(500, "optimal.csv", "eval.csv", False, 2)
     step_range = [.1,10]
     lr_range = [.1,.99]
     nstep = 10 # number of sampled step sizes
