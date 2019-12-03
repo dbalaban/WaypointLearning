@@ -127,11 +127,11 @@ if __name__ == "__main__":
     obs_t=0.5
     obs_offset=0.0
     fig, ax1 = plt.subplots()
-    datahandler = dh.DataHandler(10, "optimal.csv", "eval.csv", True, 1)
-    datahandler2 = dh.DataHandler(10, "optimal.csv", "eval_nn.csv", True, 1)
+    datahandler = dh.DataHandler(10, "test_case_optimal.csv", "test_case_coord_eval.csv", True, 1)
+    datahandler2 = dh.DataHandler(10, "test_case_optimal.csv", "test_case_best_ann_eval.csv", True, 1)
     ax1,obs_xy = PlotOpimalSol(dx, v0x, vf, obs_t, obs_offset, ax1, datahandler)
     wpt = np.array([ 0.22341839,  0.13741288, -0.42356584,  0.44567634])
-    wpt2 = np.array([0.14423926,  0.18626884, -0.38961458,  0.53745378])
+    wpt2 = np.array([1.53912872e-01,  2.51037444e-01, -4.16438906e-01,  4.80085920e-01])
     ax1 = PlotWaypointTraj(dx, v0x, vf, obs_t, obs_xy, wpt, ax1, datahandler, "Coordinate Decent Waypoint")
     ax1 = PlotWaypointTraj(dx, v0x, vf, obs_t, obs_xy, wpt2, ax1, datahandler2, "Learned Waypoint")
     ax1.legend()

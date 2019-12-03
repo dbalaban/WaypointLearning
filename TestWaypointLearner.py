@@ -44,7 +44,6 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
     net = wdnn.WaypointDistributionNN(len(x), 0.01, 1)
     baseline = wbnn.WaypointBaselineNN(len(x), 0.01, 1e2)
     fig,ax1=plt.subplots()
-    count = -1
     n = 1000
     if use_baseline:
         data = np.zeros([n, 11])

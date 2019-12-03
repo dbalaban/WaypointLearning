@@ -37,7 +37,7 @@ class DataHandler():
         wvy = float(elems[4])
         return np.array([wx,wy,wvx,wvy])
     
-    def GetSolutionFeatures(self, f):
+    def GetSolutionFeatures(self, f, small=False):
         features = [];
         with open(f) as f:
             line = f.readline()
@@ -47,7 +47,8 @@ class DataHandler():
                     features += [float(el)]
                     
                 line = f.readline()
-        
+        if small:
+            return np.array(features[0:23])
         return np.array(features)
     
     def getOptimalSolution(self, dx, v0x, vf, obs_t, obs_offset):
@@ -55,7 +56,6 @@ class DataHandler():
             round(dx[0], 3), round(dx[1], 3), round(v0x, 3),
             round(vf[0], 3), round(vf[1], 3), 
             round(obs_t, 3), round(obs_offset, 3))
-        print(cmd)
         try:
             status = subprocess.call(cmd, shell=True, timeout=self.timeout)
         except:

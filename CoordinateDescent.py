@@ -131,14 +131,14 @@ class CoordinateDecent():
                         Cs[0] = temp
                         Cs[2] = float('inf')
                     
-                    
             D = np.linalg.norm(wpt - wpt_save)
+            print(D)
             waypoints = np.vstack([waypoints, wpt])
             loss += [Cs[1]]
         return Cs[1], wpt, tsocs_calls, waypoints, loss                
 
 if __name__ == "__main__":
-    data_handler = dh.DataHandler(500, "optimal.csv", "eval.csv", False, 2)
+    data_handler = dh.DataHandler(10, "optimal.csv", "eval.csv", False, 2)
     cd = CoordinateDecent(data_handler, 0.001, 0.001, 5, .8)
     dx = np.array([0, 1])
     v0x = 1
@@ -152,4 +152,4 @@ if __name__ == "__main__":
     print(C)
     
     print(count)
-    PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
+    # PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)

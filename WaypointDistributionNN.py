@@ -40,17 +40,18 @@ class WaypointDistributionNN(nn.Module):
         # self.fc5 = nn.Linear(4*4+4, 4*4+4).double()
         # self.fc5.weight.data = torch.diag(torch.tensor([1] * 20)).double()
         
-        self.fc1 = nn.Linear(x_size, 16, bias=True).double()
-        self.fc2 = nn.Linear(16, 16, bias=False).double()
+        self.fc1 = nn.Linear(x_size, 32, bias=True).double()
+        self.fc2 = nn.Linear(32, 32, bias=False).double()
         # self.fc2.weight.data[:,:] = torch.tensor([0.38167919,  0.39101533, -0.44043292,  0.05524485, 1, 1, 1, 1]).view(8,1)
         # print(self.fc2.weight.data.shape)
-        self.fc3 = nn.Linear(16,8, bias=True).double()
+        self.fc3 = nn.Linear(32,8, bias=True).double()
         # print(self.fc3.weight.data.shape)
         # self.fc1.weight.data = torch.diag(torch.tensor([1]*x_size)).double()
         # self.fc2.weight.data[0:4,0] = torch.tensor([0]*4).double()
         # self.fc2.weight.data[4:,0] = torch.tensor([1]*4).double()
         # self.fc2.weight.data[4:,:] = torch.diag(torch.tensor([1]*4)).double()
         self.fc3.weight.data[:,4:] *= 10
+        self.optimizer = optim.Adam(self.parameters(), lr=self.alpha)
     
     def forward(self, x):
         # x = F.relu(self.conv1(x.double()))
@@ -104,8 +105,7 @@ class WaypointDistributionNN(nn.Module):
         return total/y.shape[0]
         
     def update(self,deltas,P,state):
-        optimizer = optim.Adam(self.parameters(), lr=self.alpha)
-        optimizer.zero_grad()
+        self.optimizer.zero_grad()
         
         x = torch.from_numpy(state).double()
         y = self.forward(x)
@@ -137,7 +137,7 @@ class WaypointDistributionNN(nn.Module):
         # det.register_hook(lambda grad: print(grad))
         self.fc2.weight.register_hook(lambda grad: grad.clamp_(-self.clamp,self.clamp))
         # self.fc2.weight.register_hook(lambda grad: print(grad))
-        optimizer.step()
+        self.optimizer.step()
         # print(self.fc2.weight.grad)
         
         return None
