@@ -27,7 +27,7 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
     x = np.ones(1)
     nsamples = 100
     net = wdnn.WaypointDistributionNN(len(x), 0.01, 1)
-    baseline = wbnn.WaypointBaselineNN(4, 0.01, 1e2)
+    baseline = wbnn.WaypointBaselineNN(len(x), 0.01, 1e2)
     fig,ax1=plt.subplots()
     count = 0
     while count < 1000:
@@ -55,10 +55,10 @@ def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
         print(C_tot/nsamples)
         print(wpts.shape)
         if use_baseline:
-            deltas = - (np.array(Cs) + baseline(wpts))
+            deltas = - (np.array(Cs) + baseline(x))
             print("baseline error:")
             print(np.sum(np.abs(deltas)))
-            baseline.update(-np.array(Cs), wpts)
+            baseline.update(-np.array(Cs), np.vstack([x]*nsamples))
             net.update(deltas, wpts, np.vstack([x]*nsamples))
         else:
             net.update(-np.array(Cs), wpts, np.vstack([x]*nsamples))

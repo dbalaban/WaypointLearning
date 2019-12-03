@@ -14,6 +14,26 @@ import subprocess
 
 #token is whether thee initial trajectory is plot (token=0) or the trajectory with waypoint (token=1)
 
+def PlotOpimalSol(dx, v0x, vf, obs_t, obs_offset, ax1, datahandler):
+    traj_mat, obs_xy = datahandler.GetOptimalTrajectory()
+    
+    ax1.plot(traj_mat[:,0],traj_mat[:,1])
+    ax1.plot(0,0,'x')
+    ax1.plot(dx[0],dx[1],'x')
+    
+    circle1=plt.Circle((obs_xy[0],obs_xy[1]),0.18,color='r',label='Collision Region') 
+    
+    ax1.add_patch(circle1)
+    ax1.plot(traj_mat[:,0],traj_mat[:,1],label="Time Optimal Path")
+    
+    return ax1, obs_xy
+    
+def PlotWaypointTraj(dx, v0x, vf, obs_t, obs_xy, wpt, ax1, datahandler, label):
+    traj_mat = datahandler.GetTrajectoryWithWaypoint(dx, v0x, vf, wpt, obs_xy[0], obs_xy[1])
+    ax1.plot(traj_mat[:,0],traj_mat[:,1],label=label)
+    ax1.plot(wpt[0], wpt[1], '*', label="waypoint")
+    return ax1
+
 def PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1):
     
     
@@ -99,6 +119,18 @@ def PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1):
         print()
         ax1.plot(traj_mat[:,0],traj_mat[:,1])
     return ax1
-        
-    
-    
+
+if __name__ == "__main__":
+    dx = np.array([0, 1])
+    v0x = 1
+    vf = np.array([0, 1])
+    obs_t=0.5
+    obs_offset=0.0
+    fig, ax1 = plt.subplots()
+    datahandler = dh.DataHandler(10, "optimal.csv", "eval.csv", True, 1)
+    ax1,obs_xy = PlotOpimalSol(dx, v0x, vf, obs_t, obs_offset, ax1, datahandler)
+    wpt = np.array([ 0.21447991,  0.14535624, -0.36408222,  0.37646862])
+    ax1 = PlotWaypointTraj(dx, v0x, vf, obs_t, obs_xy, wpt, ax1, datahandler, "With Waypoint")
+    ax1.legend()
+    plt.axis('equal')
+    plt.show()

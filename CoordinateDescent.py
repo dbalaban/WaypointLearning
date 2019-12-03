@@ -147,9 +147,9 @@ if __name__ == "__main__":
     obs_offset=0.0
     fig,ax1=plt.subplots()
     C, wpt_opt, count, wpts, loss = cd.solve(dx, v0x, vf, obs_t, obs_offset)
-    PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
     print(wpt_opt)
     print(len(wpts))
     print(C)
     
     print(count)
+    PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
