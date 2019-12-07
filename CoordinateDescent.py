@@ -82,7 +82,8 @@ class CoordinateDecent():
         wpt = self.handler.getInitialWaypoint(f)
         D = float('inf')
         Cs = np.array([float('inf'), C, float('inf')])
-        
+        fx = open("Coord_Descent.csv", "w+")
+        fx.close()
         fo = open(f, "r")
         for i in range(2):
             line = fo.readline()
@@ -130,7 +131,10 @@ class CoordinateDecent():
                         Cs[1] = Cs[2]
                         Cs[0] = temp
                         Cs[2] = float('inf')
-                    
+                    fx = open("Coord_Descent.csv", "a")
+                    f_writer = csv.writer(fx, delimiter=',')
+                    f_writer.writerow(wpt)
+                    fx.close()
             D = np.linalg.norm(wpt - wpt_save)
             print(D)
             waypoints = np.vstack([waypoints, wpt])
@@ -138,7 +142,7 @@ class CoordinateDecent():
         return Cs[1], wpt, tsocs_calls, waypoints, loss                
 
 if __name__ == "__main__":
-    data_handler = dh.DataHandler(10, "optimal.csv", "eval.csv", False, 2)
+    data_handler = dh.DataHandler(100, "optimal.csv", "eval.csv", False, 2)
     cd = CoordinateDecent(data_handler, 0.001, 0.001, 5, .8)
     dx = np.array([0, 1])
     v0x = 1
@@ -152,8 +156,4 @@ if __name__ == "__main__":
     print(C)
     
     print(count)
-<<<<<<< HEAD
-    #PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
-=======
-    # PlotTraj(dx, v0x, vf, obs_t, obs_offset,wpts,ax1)
->>>>>>> 051fffbf9be2892d5a2d981a31d958c073177270
+

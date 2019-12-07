@@ -17,7 +17,7 @@ def getSampleValues(n, value_range, isLogScale=False) :
   return values.tolist()
 
 def Train1Prob(dx, v0x, vf, obs_t, obs_offset, use_baseline=True):
-    data_handler = dh.DataHandler(10, "optimal_nn.csv", "eval_nn.csv", True, 1)
+    data_handler = dh.DataHandler(100, "optimal_nn.csv", "eval_nn.csv", True, 1)
     T_opt, _, _, x = data_handler.getOptimalSolution(
                             dx, v0x, vf, obs_t, obs_offset)
     obs_x=x[13]

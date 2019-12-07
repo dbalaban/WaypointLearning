@@ -3,7 +3,7 @@ import subprocess
 import csv
 import os
 import random
-from PlotTrajectory import PlotTraj 
+#from PlotTrajectory import PlotTraj 
 
 class DataHandler():
     def __init__(self, gamma, optimal_data, eval_data, need_features, timeout):
