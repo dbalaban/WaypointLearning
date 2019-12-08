@@ -38,15 +38,22 @@ fig,ax1=plt.subplots()
 
 fig2,ax2=plt.subplots()
 
-fig3,ax3=plt.subplots()
 
 
+with open('optimal.csv') as csvfile:
+                    lines = csv.reader(csvfile, delimiter=',')
+                    itraj=0
+                    traj_mat=[0,0]
+                    for row in lines:
+                        
+                        itraj=itraj+1
+                        if itraj==2:
+                            obs_xy=[float(i) for i in row]
+                        if itraj>=6:
+                            traj_mat=np.vstack((traj_mat,[float(row[1]),float(row[2])]))
 
-ax3.plot(cost2)
 
-ax3.plot()
-
-#wpt_coord=[]
+wpt_coord=[0,0,0,0]
 with open('Coord_Descent.csv') as csvfile:
                     lines = csv.reader(csvfile, delimiter=',')
                     wpt_index=-1
@@ -55,42 +62,21 @@ with open('Coord_Descent.csv') as csvfile:
                     for row in lines:
                         wpt_index+=1
                     
-                        wpt=np.vstack((wpt,[float(i) for i in row]))
+                        wpt_coord=np.vstack((wpt_coord,[float(i) for i in row]))
 
-#wpt=wpt[1:,:]                                
-#mu=mu[1:,:]
-
-with open('optimal_nn.csv') as csvfile:
-                    lines = csv.reader(csvfile, delimiter=',')
-                    ii=0
-                    traj_mat=[0,0]
-                    for row in lines:
-                        
-                        ii=ii+1
-                        if ii==2:
-                            obs_xy=[float(i) for i in row]
-                        if ii>=6:
-                            traj_mat=np.vstack((traj_mat,[float(row[1]),float(row[2])]))
-#fig,ax1=plt.subplots()                        
-#ax1.plot(traj_mat[:,0],traj_mat[:,1])
-#ax1.plot(0,0,'x')
-circle1=plt.Circle((obs_xy[0],obs_xy[1]),0.18,color='r',label='Obstacle region') 
-
-#for index in range(300,594):
-#    ax1.plot(mu_x[index],mu_y[index],'o',color=(index/693,index/693,index/693))
-#
-#for index in range(10,wpt_index):
-#    ax1.plot(wpt[index,0],wpt[index,1],'o',color=(0,index/wpt_index,index/wpt_index))
+wpt_coord=wpt_coord[1:,:]                                
 
 
-os.system("./bin/eval waypath1 0 1 1 0 1 "
-          +str(wpt[wpt_index,0])+" "+str(wpt[wpt_index,1])+" "
-          +str(wpt[wpt_index,2])+" "+str(wpt[wpt_index,3])+" "+str(obs_xy[0])+" "+str(obs_xy[1]))
-        
-with open('waypath1') as csvfile:
+
+os.system("./bin/eval waypathCoord 0 1 1 0 1 "
+          +str(wpt_coord[wpt_index,0])+" "+str(wpt_coord[wpt_index,1])+" "
+          +str(wpt_coord[wpt_index,2])+" "+str(wpt_coord[wpt_index,3])+" "+str(obs_xy[0])+" "+str(obs_xy[1]))
+
+traj_CD=[0,0]
+with open('waypathCoord') as csvfile:
                 spamreader = csv.reader(csvfile, delimiter=',')
                 ii=0
-                wayamat2=[0,0]
+                
                 for row in spamreader:
                     ii=ii+1
                     if ii==1:
@@ -100,10 +86,45 @@ with open('waypath1') as csvfile:
                     else:
                         vecw2=[float(i) for i in row]
                         
-                        wayamat2=np.vstack((wayamat2,[vecw2[1],vecw2[2]]))
-                
+                        traj_CD=np.vstack((traj_CD,[vecw2[1],vecw2[2]]))
 
-print(wpt_index)   
+
+
+
+
+
+#mu=mu[1:,:]
+
+with open('optimal.csv') as csvfile:
+                    lines = csv.reader(csvfile, delimiter=',')
+                    itraj=0
+                    traj_mat=[0,0]
+                    for row in lines:
+                        
+                        itraj=itraj+1
+                        if itraj==2:
+                            obs_xy=[float(i) for i in row]
+                        if itraj>=6:
+                            traj_mat=np.vstack((traj_mat,[float(row[1]),float(row[2])]))
+print(itraj)
+#fig,ax1=plt.subplots()                        
+#ax1.plot(traj_mat[:,0],traj_mat[:,1])
+#ax1.plot(0,0,'x')
+circle1=plt.Circle((obs_xy[0],obs_xy[1]),0.18,color='r',label='Obstacle region') 
+circle2=plt.Circle((obs_xy[0],obs_xy[1]),0.18,color='r',label='Obstacle region') 
+
+#for index in range(300,594):
+#    ax1.plot(mu_x[index],mu_y[index],'o',color=(index/693,index/693,index/693))
+#
+#for index in range(10,wpt_index):
+#    ax1.plot(wpt[index,0],wpt[index,1],'o',color=(0,index/wpt_index,index/wpt_index))
+
+
+
+fig3,ax3=plt.subplots()
+
+#ax3.plot(wayamat_CD[:,0],wayamat_CD[:,1])  
+
 
 #ax1.plot(wayamat2[:,0],wayamat2[:,1])
 
@@ -141,6 +162,7 @@ for index in range(len(listvec)):
     
     if listvec[index]==780:
         ax1.plot(wayamat2[:,0],wayamat2[:,1],label=str(index+1)+',best path')
+        ax3.plot(wayamat2[:,0],wayamat2[:,1],label='REINFORCE with baseline (REb)')
     else:
         ax1.plot(wayamat2[:,0],wayamat2[:,1],label=str(index+1))
     if listvec[index]==780:
@@ -151,30 +173,46 @@ for index in range(len(listvec)):
         
     print(wptrow[listvec[index],0:4])
     ax1.plot(wptrow[listvec[index],0],wptrow[listvec[index],1],'x',color='black')
+
+
+ax3.plot(traj_CD[:,0],traj_CD[:,1],label='Coordinate descent (Cd)')  
+
+
+
+ax3.plot(traj_mat[:,0],traj_mat[:,1])
+ax3.plot(0,0,'o')
+ax3.plot(0,1,'o')
+ax3.plot(wpt_coord[wpt_index,0],wpt_coord[wpt_index,1],'x',color='orange',label='Waypoint for Cd')
+ax3.plot(wptrow[780,0],wptrow[780,1],'x',color='blue',label='Waypoint for REb')
+
+ax3.add_patch(circle1)
+
 ax1.plot(0,0,'o')
 ax1.plot(0,1,'o')
 ax1.set(xlabel='x',ylabel='y')
 ax1.axis('equal')
-ax1.legend()
+ax3.axis('equal')
+
 ax1.plot()
-ax2.plot((wptrow[:,9]),color='c',label='Average cost') 
-ax2.plot((wptrow[:,9]),color='c',label='Average cost') 
+ax2.plot((wptrow[:,9]),color='m',label='Average cost') 
+#ax2.plot((wptrow[:,8]),color='c',label='mu cost') 
 ax21=ax2.twinx()
-ax21.plot(10*np.log10(var_cost),color='m',label='trace(S) [dB]')
+ax21.plot(10*np.log10(var_cost),color='c',label='trace(S) [dB]')
 ax2.set(xlabel='Iterations',ylabel='Average Cost')
-ax2.legend(loc='upper center')
+
 ax21.set(ylabel='trace(S) [dB]')
 ax21.legend()
 
 
-ax1.add_patch(circle1)
-
-
-
+ax1.add_patch(circle2)
+ax1.legend()
+ax3.legend()
+ax3.set(xlabel='x',ylabel='y')
+ax2.legend(loc='upper center')
 fig.savefig('trajectories.eps',format='eps',bbox_inches='tight')
 
 fig2.savefig('trajectories_cost.eps',format='eps',bbox_inches='tight')
-
+fig3.savefig('trajectories_optimal.eps',format='eps',bbox_inches='tight')
 
 
 
