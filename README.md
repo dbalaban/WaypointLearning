@@ -1,3 +1,7 @@
+# Coordinate Descent
+to run the coordinate descent algorithm on the test case run:
+python3 CoordinateDescent.py
+
 # WaypointLearning
 Reinforcement learning agent to avoid obstacles using TSOCS
 
@@ -6,6 +10,8 @@ install dependencies with:
 
 compile with:
 make
+
+Note: the directory 'proto' may have to be added to the src directory
 
 run test with:
 ./bin/waypointlearning
@@ -68,3 +74,17 @@ each line afterwords has the following structure:
 t, x, y, vx, vy
 
 which describes the path the robot follows
+
+# Coordinate Descent
+to run the coordinate descent algorithm on the test case run:
+python3 CoordinateDescent.py
+
+# Policy Learning
+to run the policy learning on the test case run:
+python3 TestWaypointLearner.py
+
+to generate a simple plot of the trajectories run:
+python3 PlotTrajectory.py
+
+to watch the general policy fail to learn anything useful run:
+GeneralPolicyLearner.py
